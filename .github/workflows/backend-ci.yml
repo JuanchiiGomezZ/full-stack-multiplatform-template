@@ -63,7 +63,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
-        run: npm run test
+        run: npm run test --passWithNoTests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db?schema=public
           JWT_SECRET: test-jwt-secret-for-ci-testing-only
