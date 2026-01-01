@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import type { User, AuthState } from "../types/auth.types";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import type { User, AuthState } from '../types/auth.types';
 
 /**
  * Auth Store Actions
@@ -11,9 +11,10 @@ interface AuthActions {
   login: (user: User) => void;
   logout: () => void;
   reset: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
-type AuthStore = AuthState & AuthActions;
+type AuthStore = AuthState & AuthActions & { _hasHydrated: boolean };
 
 /**
  * Initial auth state
@@ -34,6 +35,7 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       ...initialState,
+      _hasHydrated: false,
 
       setUser: (user) =>
         set({
@@ -59,14 +61,25 @@ export const useAuthStore = create<AuthStore>()(
         }),
 
       reset: () => set(initialState),
+
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: "auth-storage",
+      name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
+
+/**
+ * Hook to check if the store has been hydrated
+ * Use this in UI components to prevent hydration mismatch
+ */
+export const useHasHydrated = () => useAuthStore((state) => state._hasHydrated);

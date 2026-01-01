@@ -9,13 +9,13 @@
 // export { LoginForm } from './components/LoginForm';
 
 // Hooks
-export { useAuth, authKeys } from "./hooks/useAuth";
+export { useAuth, authKeys } from './hooks/useAuth';
 
 // Services
-export { authService } from "./services/auth.service";
+export { authService } from './services/auth.service';
 
 // Stores
-export { useAuthStore } from "./stores/auth.store";
+export { useAuthStore, useHasHydrated } from './stores/auth.store';
 
 // Types
 export type {
@@ -25,4 +25,4 @@ export type {
   RegisterCredentials,
   AuthResponse,
   AuthError,
-} from "./types/auth.types";
+} from './types/auth.types';
