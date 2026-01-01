@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+/// Organization model for multi-tenancy support
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  users         User[]
+  refreshTokens RefreshToken[]
+
+  @@map("organizations")
+}
+
+/// User model with role-based access control
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password       String
+  firstName      String?  @map("first_name")
+  lastName       String?  @map("last_name")
+  role           Role     @default(USER)
+  isActive       Boolean  @default(true) @map("is_active")
+  emailVerified  Boolean  @default(false) @map("email_verified")
+  
+  // Multi-tenancy
+  organizationId String?  @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  
+  // Audit fields
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  createdBy      String?  @map("created_by")
+  updatedBy      String?  @map("updated_by")
+
+  // Relations
+  refreshTokens  RefreshToken[]
+
+  @@index([email])
+  @@index([organizationId])
+  @@map("users")
+}
+
+/// Refresh tokens for JWT authentication
+model RefreshToken {
+  id             String   @id @default(uuid())
+  token          String   @unique
+  userId         String   @map("user_id")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Multi-tenancy
+  organizationId String?  @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  
+  expiresAt      DateTime @map("expires_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  revokedAt      DateTime? @map("revoked_at")
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
