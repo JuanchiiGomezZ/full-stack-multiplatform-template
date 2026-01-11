@@ -1,0 +1,23 @@
+{
+  "buttons": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "confirm": "Confirmar",
+    "back": "Volver"
+  },
+  "labels": {
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "errors": {
+    "required": "Este campo es requerido",
+    "invalid_email": "Correo electrónico inválido",
+    "network_error": "Error de conexión",
+    "generic": "Ha ocurrido un error"
+  }
+}

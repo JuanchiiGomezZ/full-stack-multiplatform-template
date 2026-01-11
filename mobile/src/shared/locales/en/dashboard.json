@@ -1,0 +1,18 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome",
+  "hello": "Hello,",
+  "stats": {
+    "title": "Statistics",
+    "total": "Total",
+    "active": "Active",
+    "completed": "Completed"
+  },
+  "actions": {
+    "refresh": "Refresh",
+    "view_all": "View all"
+  },
+  "recent_activity": "Recent Activity",
+  "no_recent_activity": "No recent activity",
+  "pomodoro": "Pomodoros"
+}

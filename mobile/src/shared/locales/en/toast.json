@@ -1,0 +1,22 @@
+{
+  "success_generic": "Success!",
+  "error_generic": "Something went wrong",
+  "warning_generic": "Warning",
+  "info_generic": "Info",
+  "loading_generic": "Loading...",
+  "saved": "Saved successfully",
+  "deleted": "Deleted successfully",
+  "updated": "Updated successfully",
+  "created": "Created successfully",
+  "save_error": "Failed to save",
+  "delete_error": "Failed to delete",
+  "update_error": "Failed to update",
+  "create_error": "Failed to create",
+  "network_error": "Network connection error",
+  "server_error": "Server error occurred",
+  "validation_error": "Please check your input",
+  "permission_denied": "Permission denied",
+  "not_found": "Not found",
+  "session_expired": "Session expired",
+  "please_login": "Please login again"
+}

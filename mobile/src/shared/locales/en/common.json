@@ -1,0 +1,23 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "back": "Back"
+  },
+  "labels": {
+    "email": "Email",
+    "password": "Password",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalid_email": "Invalid email",
+    "network_error": "Connection error",
+    "generic": "An error occurred"
+  }
+}

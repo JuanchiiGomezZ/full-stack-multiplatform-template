@@ -1,0 +1,24 @@
+{
+  "title": "Configuración",
+  "sections": {
+    "account": "Cuenta",
+    "preferences": "Preferencias",
+    "about": "Acerca de"
+  },
+  "account": {
+    "profile": "Perfil",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "logout": "Cerrar sesión"
+  },
+  "preferences": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "notifications": "Notificaciones"
+  },
+  "about": {
+    "version": "Versión",
+    "terms": "Términos y condiciones",
+    "privacy": "Política de privacidad"
+  }
+}

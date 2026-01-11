@@ -1,0 +1,22 @@
+{
+  "success_generic": "¡Éxito!",
+  "error_generic": "Algo salió mal",
+  "warning_generic": "Advertencia",
+  "info_generic": "Información",
+  "loading_generic": "Cargando...",
+  "saved": "Guardado exitosamente",
+  "deleted": "Eliminado exitosamente",
+  "updated": "Actualizado exitosamente",
+  "created": "Creado exitosamente",
+  "save_error": "Error al guardar",
+  "delete_error": "Error al eliminar",
+  "update_error": "Error al actualizar",
+  "create_error": "Error al crear",
+  "network_error": "Error de conexión de red",
+  "server_error": "Ocurrió un error del servidor",
+  "validation_error": "Por favor revisa tu entrada",
+  "permission_denied": "Permiso denegado",
+  "not_found": "No encontrado",
+  "session_expired": "Sesión expirada",
+  "please_login": "Por favor inicia sesión nuevamente"
+}
