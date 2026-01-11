@@ -1,16 +1,11 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import {
-  View,
-  Pressable,
-  Animated,
-  TouchableOpacity,
-  TextInput as RNTextInput,
-} from "react-native";
+import { View, Animated, TouchableOpacity, TextInput as RNTextInput } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { BottomSheetFlatList, BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { Icon } from "./Icon";
 import type { IconName } from "./Icon";
 import { Text } from "./Text";
+import { InputTrigger } from "./InputTrigger";
 import type { ViewStyle, StyleProp } from "react-native";
 import { BottomSheet } from "./BottomSheet";
 
@@ -140,39 +135,22 @@ export function SearchableSelect<T extends string | number>({
   });
 
   return (
-    <View style={[styles.container, style]}>
-      {/* Label */}
-      {label && (
-        <Text variant="caption" weight="medium" style={styles.label}>
-          {label}
-        </Text>
-      )}
-
+    <View style={style}>
       {/* Trigger */}
-      <Pressable
-        style={[styles.trigger, disabled && styles.triggerDisabled, error && styles.triggerError]}
-        onPress={open}
+      <InputTrigger
+        label={label}
+        placeholder={placeholder}
+        value={selectedOption?.label || null}
+        error={error}
         disabled={disabled}
-        accessibilityRole="combobox"
+        onPress={open}
         accessibilityLabel={selectedOption?.label ?? label}
-        accessibilityState={{ expanded: isOpen }}
-      >
-        <View style={styles.triggerContent}>
-          <Text variant="body" numberOfLines={1}>
-            {selectedOption?.label ?? placeholder}
-          </Text>
+        rightContent={
           <Animated.View style={{ transform: [{ rotate: spin }] }}>
-            <Icon name="chevron-down" size="sm" color="text" />
+            <Icon name="chevron-down" size="sm" color="muted" />
           </Animated.View>
-        </View>
-      </Pressable>
-
-      {/* Error message */}
-      {error && (
-        <Text variant="caption" color="error" style={styles.errorText}>
-          {error}
-        </Text>
-      )}
+        }
+      />
 
       {/* BottomSheet */}
       <BottomSheet isOpen={isOpen} onClose={close} snapPoints={["60%", "85%"]}>
@@ -362,48 +340,6 @@ function SearchableSelectOptionRow<T>({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  // Container
-  container: {
-    width: "100%",
-  },
-
-  // Label
-  label: {
-    marginBottom: theme.spacing(2),
-    color: theme.colors.text.primary,
-    fontWeight: "600",
-  },
-
-  // Trigger
-  trigger: {
-    minHeight: 56,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.xl,
-    backgroundColor: theme.colors.card,
-    paddingHorizontal: theme.spacing(4),
-    justifyContent: "center",
-  },
-  triggerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  triggerDisabled: {
-    backgroundColor: theme.colors.muted,
-    borderColor: theme.colors.border,
-    opacity: 0.7,
-  },
-  triggerError: {
-    borderColor: theme.colors.error,
-  },
-
-  // Error text
-  errorText: {
-    marginTop: theme.spacing(1),
-    marginLeft: theme.spacing(1),
-  },
-
   // Sheet Header
   sheetHeader: {
     paddingBottom: theme.spacing(4),

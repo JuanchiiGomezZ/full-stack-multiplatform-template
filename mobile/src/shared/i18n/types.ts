@@ -3,8 +3,7 @@ import "i18next";
 // Import tipos de archivos de traducción
 import type commonEN from "@shared/locales/en/common.json";
 import type authEN from "@shared/locales/en/auth.json";
-import type dashboardEN from "@shared/locales/en/dashboard.json";
-import type settingsEN from "@shared/locales/en/settings.json";
+import type toastEN from "@shared/locales/en/toast.json";
 
 /**
  * Module augmentation de i18next para type-safety completo
@@ -20,8 +19,7 @@ declare module "i18next" {
     resources: {
       common: typeof commonEN;
       auth: typeof authEN;
-      dashboard: typeof dashboardEN;
-      settings: typeof settingsEN;
+      toast: typeof toastEN;
     };
   }
 }

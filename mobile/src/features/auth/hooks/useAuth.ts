@@ -1,22 +1,22 @@
-import { useCallback } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { STORAGE_KEYS } from '@/constants';
-import { authApi } from '../services/auth.service';
-import { useAuthStore, selectIsAuthenticated } from '../stores/auth.store';
-import type { User } from '../types/auth.types';
+import { useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { STORAGE_KEYS } from "@/constants";
+import { authApi } from "../services/auth.service";
+import { useAuthStore, selectIsAuthenticated } from "../stores/auth.store";
+import type { User } from "../types/auth.types";
 
 // Query Keys
 export const authQueryKeys = {
-  all: ['auth'] as const,
-  me: ['auth', 'me'] as const,
+  all: ["auth"] as const,
+  me: ["auth", "me"] as const,
 };
 
 // Error handler helper
 const getErrorMessage = (error: unknown): string => {
   const err = error as { response?: { data?: { message?: string } } };
-  return err.response?.data?.message || 'An error occurred';
+  return err.response?.data?.message || "An error occurred";
 };
 
 // Clear all auth storage
@@ -28,12 +28,12 @@ const clearAuthStorage = async (): Promise<void> => {
 
 // Navigate to login
 const navigateToLogin = (): void => {
-  router.replace('/(auth)/login' as const);
+  router.replace("/(auth)/login" as const);
 };
 
 // Navigate to dashboard
 const navigateToDashboard = (): void => {
-  router.replace('/(tool)/dashboard' as const);
+  //TODO: Navigate to dashboard
 };
 
 // ============ HOOKS ============
@@ -151,7 +151,7 @@ export function useAuth() {
 
 // ============ PROTECTED ROUTE HOOK ============
 
-export function useProtectedRoute(redirectTo: '/(auth)/login' = '/(auth)/login') {
+export function useProtectedRoute(redirectTo: "/(auth)/login" = "/(auth)/login") {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
 

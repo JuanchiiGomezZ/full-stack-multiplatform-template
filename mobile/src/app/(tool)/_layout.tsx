@@ -1,53 +1,32 @@
-'use client';
-
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useLogout } from '@/features/auth/hooks/useAuth';
+import { useEffect } from "react";
+import { router, Tabs } from "expo-router";
+import {
+  useAuthStore,
+  selectIsAuthenticated,
+  selectIsLoading,
+} from "@/features/auth/stores/auth.store";
 
 export default function ToolLayout() {
-  const logoutMutation = useLogout();
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
+  const isLoading = useAuthStore(selectIsLoading);
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!isLoading && !isAuthenticated) {
+      router.replace("/(auth)/login");
+    }
+  }, [isLoading, isAuthenticated]);
+
+  // Don't render protected screens if loading or not authenticated
+  if (isLoading || !isAuthenticated) { 
+    return null;
+  }
 
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
-        headerRight: () => (
-          <Ionicons
-            name="log-out-outline"
-            size={24}
-            color="#ff3b30"
-            style={{ marginRight: 15 }}
-            onPress={() => {
-              if (!logoutMutation.isPending) {
-                logoutMutation.mutate();
-              }
-            }}
-          />
-        ),
-        tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: '#eee',
-        },
       }}
-    >
-      <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    ></Tabs>
   );
 }

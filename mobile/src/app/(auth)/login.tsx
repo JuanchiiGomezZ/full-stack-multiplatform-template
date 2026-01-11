@@ -1,4 +1,5 @@
-import { useForm, useAuth, GuestRoute } from "@/features/auth";
+import { useAuth } from "@/features/auth";
+import { useForm } from "@/shared/hooks";
 import { loginSchema, type LoginFormData } from "@/features/auth/schemas/auth.schema";
 import { Controller } from "react-hook-form";
 import { router } from "expo-router";
@@ -26,63 +27,61 @@ export default function LoginScreen() {
   };
 
   return (
-    <GuestRoute>
-      <ScreenWrapper centered={{ y: true }}>
-        <Text variant="h1">{t("login.title")}</Text>
-        <Text variant="body" color="secondary">
-          {t("login.subtitle")}
-        </Text>
-        <Controller
-          control={control}
-          name="email"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              label={t("labels.email")}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder={t("login.email_placeholder")}
-              error={errors.email?.message}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="password"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              label={t("labels.password")}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              secureTextEntry
-              placeholder={t("login.password_placeholder")}
-              error={errors.password?.message}
-            />
-          )}
-        />
-
-        {loginError && (
-          <Text variant="caption" color="error" style={styles.error}>
-            {loginError.message}
-          </Text>
+    <ScreenWrapper centered={{ y: true }}>
+      <Text variant="h1">{t("login.title")}</Text>
+      <Text variant="body" color="secondary">
+        {t("login.subtitle")}
+      </Text>
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            label={t("labels.email")}
+            value={value}
+            onChangeText={onChange}
+            onBlur={onBlur}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder={t("login.email_placeholder")}
+            error={errors.email?.message}
+          />
         )}
+      />
 
-        <Button title={t("login.button")} onPress={handleSubmit(onSubmit)} loading={isLoggingIn} />
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            label={t("labels.password")}
+            value={value}
+            onChangeText={onChange}
+            onBlur={onBlur}
+            secureTextEntry
+            placeholder={t("login.password_placeholder")}
+            error={errors.password?.message}
+          />
+        )}
+      />
 
-        <View style={styles.linkContainer}>
-          <Text variant="body" color="primary">
-            {t("login.no_account")}{" "}
-          </Text>
-          <Text variant="body" color="primary" onPress={() => router.push("/(auth)/register")}>
-            {t("login.sign_up")}
-          </Text>
-        </View>
-      </ScreenWrapper>
-    </GuestRoute>
+      {loginError && (
+        <Text variant="caption" color="error" style={styles.error}>
+          {loginError.message}
+        </Text>
+      )}
+
+      <Button title={t("login.button")} onPress={handleSubmit(onSubmit)} loading={isLoggingIn} />
+
+      <View style={styles.linkContainer}>
+        <Text variant="body" color="primary">
+          {t("login.no_account")}{" "}
+        </Text>
+        <Text variant="body" color="primary" onPress={() => router.push("/(auth)/register")}>
+          {t("login.sign_up")}
+        </Text>
+      </View>
+    </ScreenWrapper>
   );
 }
 

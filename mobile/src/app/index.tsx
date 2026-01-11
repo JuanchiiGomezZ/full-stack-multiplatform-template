@@ -1,9 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { router, useRootNavigationState } from "expo-router";
-import {
-  useAuthStore,
-  selectIsAuthenticated,
-} from "@/features/auth/stores/auth.store";
+import { useAuthStore, selectIsAuthenticated } from "@/features/auth/stores/auth.store";
 import { ScreenWrapper } from "@/shared/components/ui";
 
 export default function Index() {
@@ -32,7 +29,7 @@ export default function Index() {
     // Usar setTimeout para asegurar que el navigator está completamente listo
     const timer = setTimeout(() => {
       if (isAuthenticated) {
-        router.replace("/(tool)/dashboard");
+        //TODO: Navigate to dashboard
       } else {
         router.replace("/(auth)/login");
       }

@@ -13,6 +13,7 @@ export { Toast, toast } from "./Toast";
 export { Badge } from "./Badge";
 export { Card } from "./Card";
 export { Select } from "./Select";
+export { InputTrigger } from "./InputTrigger";
 export { DatePicker, DateOnlyPicker, TimePicker, DateTimePicker2 } from "./DatePicker";
 export { SearchableSelect } from "./SearchableSelect";
 export type { ListProps } from "./List";

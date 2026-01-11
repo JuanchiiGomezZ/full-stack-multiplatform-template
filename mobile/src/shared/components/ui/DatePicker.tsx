@@ -6,7 +6,7 @@ import type { ViewStyle } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
-import { Text, Icon, BottomSheet } from "@/shared/components/ui";
+import { Text, Icon, BottomSheet, InputTrigger } from "@/shared/components/ui";
 import type { IconName } from "@/shared/components/ui/Icon";
 import { formatDate } from "@/shared/utils/format";
 import { useState, useCallback, useEffect } from "react";
@@ -118,47 +118,28 @@ export function DatePicker({
   };
 
   return (
-    <View style={[styles.container, style]}>
-      {/* Label */}
-      {label && (
-        <Text variant="bodySmall" weight="medium" style={styles.label}>
-          {label}
-        </Text>
-      )}
-
+    <View style={style}>
       {/* Picker Trigger */}
-      <TouchableOpacity
-        onPress={() => !disabled && setIsOpen(true)}
+      <InputTrigger
+        label={label}
+        placeholder={placeholder}
+        value={displayValue}
+        error={error}
         disabled={disabled}
-        style={[styles.trigger, error && styles.triggerError, disabled && styles.triggerDisabled]}
-        accessibilityRole="button"
+        onPress={() => setIsOpen(true)}
         accessibilityLabel={label || "Seleccionar fecha"}
-      >
-        <View style={styles.triggerContent}>
-          <Icon name={getIcon()} size="sm" color="muted" />
-          <Text style={styles.triggerText} color={displayValue ? "primary" : "muted"}>
-            {displayValue || placeholder}
-          </Text>
-        </View>
-
-        {/* Clear button */}
-        {value && !disabled && (
-          <TouchableOpacity
-            onPress={handleClear}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            style={styles.clearButton}
-          >
-            <Icon name="close-circle" size="sm" color="muted" />
-          </TouchableOpacity>
-        )}
-      </TouchableOpacity>
-
-      {/* Error */}
-      {error && (
-        <Text variant="bodySmall" color="error" style={styles.error}>
-          {error}
-        </Text>
-      )}
+        leftContent={<Icon name={getIcon()} size="sm" color="muted" />}
+        rightContent={
+          value && !disabled ? (
+            <TouchableOpacity
+              onPress={handleClear}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Icon name="close-circle" size="sm" color="muted" />
+            </TouchableOpacity>
+          ) : undefined
+        }
+      />
 
       {/* Android DateTimePicker (inline modal) */}
       {Platform.OS === "android" && isOpen && (
@@ -224,46 +205,6 @@ export function DatePicker({
 // ==================== STYLES ====================
 
 const styles = StyleSheet.create((theme) => ({
-  container: {
-    marginBottom: theme.spacing(4),
-  },
-  label: {
-    marginBottom: theme.spacing(2),
-  },
-  trigger: {
-    height: 56,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: theme.spacing(4),
-    backgroundColor: theme.colors.background,
-  },
-  triggerError: {
-    borderColor: theme.colors.error,
-  },
-  triggerDisabled: {
-    backgroundColor: theme.colors.muted,
-    opacity: 0.5,
-  },
-  triggerContent: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing(3),
-  },
-  triggerText: {
-    flex: 1,
-  },
-  clearButton: {
-    marginLeft: theme.spacing(2),
-  },
-  error: {
-    marginTop: theme.spacing(1),
-    marginLeft: theme.spacing(1),
-  },
   // Bottom sheet styles
   sheetHeader: {
     flexDirection: "row",

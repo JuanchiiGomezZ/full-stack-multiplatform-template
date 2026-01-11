@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { View, Pressable, Animated, TouchableOpacity } from "react-native";
+import { View, Animated, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { Icon, IconName } from "./Icon";
 import { Text } from "./Text";
+import { InputTrigger } from "./InputTrigger";
 import type { ViewStyle, StyleProp } from "react-native";
 import { BottomSheet } from "./BottomSheet";
 import { useTheme } from "@react-navigation/native";
@@ -92,39 +93,22 @@ export function Select<T extends string | number>({
   });
 
   return (
-    <View style={[styles.container, style]}>
-      {/* Label */}
-      {label && (
-        <Text variant="caption" weight="medium" style={styles.label}>
-          {label}
-        </Text>
-      )}
-
+    <View style={style}>
       {/* Trigger */}
-      <Pressable
-        style={[styles.trigger, disabled && styles.triggerDisabled, error && styles.triggerError]}
-        onPress={open}
+      <InputTrigger
+        label={label}
+        placeholder={placeholder}
+        value={selectedOption?.label || null}
+        error={error}
         disabled={disabled}
-        accessibilityRole="combobox"
+        onPress={open}
         accessibilityLabel={selectedOption?.label ?? label}
-        accessibilityState={{ expanded: isOpen }}
-      >
-        <View style={styles.triggerContent}>
-          <Text variant="body" numberOfLines={1}>
-            {selectedOption?.label ?? placeholder}
-          </Text>
+        rightContent={
           <Animated.View style={{ transform: [{ rotate: spin }] }}>
-            <Icon name="chevron-down" size="sm" color="text" />
+            <Icon name="chevron-down" size="sm" color="muted" />
           </Animated.View>
-        </View>
-      </Pressable>
-
-      {/* Error message */}
-      {error && (
-        <Text variant="caption" color="error" style={styles.errorText}>
-          {error}
-        </Text>
-      )}
+        }
+      />
 
       {/* BottomSheet */}
       <BottomSheet
@@ -255,55 +239,6 @@ function SelectOptionRow<T>({
 }
 
 const styles = StyleSheet.create((theme) => ({
-  // Container
-  container: {
-    width: "100%",
-  },
-
-  // Label
-  label: {
-    marginBottom: theme.spacing(2),
-    color: theme.colors.text.primary,
-    fontWeight: "600",
-  },
-
-  // Trigger
-  trigger: {
-    minHeight: 56,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.xl,
-    backgroundColor: theme.colors.card,
-    paddingHorizontal: theme.spacing(4),
-    justifyContent: "center",
-  },
-  triggerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  triggerValue: {
-    flex: 1,
-    color: theme.colors.text.primary,
-  },
-  triggerPlaceholder: {
-    color: theme.colors.text.muted,
-  },
-  triggerDisabled: {
-    backgroundColor: theme.colors.muted,
-    borderColor: theme.colors.border,
-    opacity: 0.7,
-  },
-  triggerError: {
-    borderColor: theme.colors.error,
-  },
-
-  // Error text
-  errorText: {
-    marginTop: theme.spacing(1),
-    marginLeft: theme.spacing(1),
-  },
-
   // BottomSheet
   sheetBackground: {
     backgroundColor: theme.colors.card,

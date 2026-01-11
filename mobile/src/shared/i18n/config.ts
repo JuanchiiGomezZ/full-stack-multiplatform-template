@@ -5,14 +5,9 @@ import { mmkvLanguageDetector } from "./storage";
 // Import de traducciones (síncronas para mejor rendimiento en mobile)
 import commonEN from "@shared/locales/en/common.json";
 import authEN from "@shared/locales/en/auth.json";
-import dashboardEN from "@shared/locales/en/dashboard.json";
-import settingsEN from "@shared/locales/en/settings.json";
 import toastEN from "@shared/locales/en/toast.json";
-
 import commonES from "@shared/locales/es/common.json";
 import authES from "@shared/locales/es/auth.json";
-import dashboardES from "@shared/locales/es/dashboard.json";
-import settingsES from "@shared/locales/es/settings.json";
 import toastES from "@shared/locales/es/toast.json";
 
 /**
@@ -22,15 +17,11 @@ const resources = {
   en: {
     common: commonEN,
     auth: authEN,
-    dashboard: dashboardEN,
-    settings: settingsEN,
     toast: toastEN,
   },
   es: {
     common: commonES,
     auth: authES,
-    dashboard: dashboardES,
-    settings: settingsES,
     toast: toastES,
   },
 } as const;
