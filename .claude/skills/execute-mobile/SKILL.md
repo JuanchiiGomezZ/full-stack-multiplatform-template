@@ -831,9 +831,105 @@ export function LoginForm() {
 
 ### Internationalization - i18next + MMKV
 
-The app uses i18next with MMKV storage for language preferences:
+The app uses i18next with MMKV storage for language preferences. Translation files are organized by namespace (feature/area) and language.
 
-**Configuration:**
+#### Complete Flow to Add New Translations
+
+When adding translations for a new feature (e.g., `products`), follow this complete process:
+
+**Step 1: Create Translation Files**
+
+Create JSON files for each language in `shared/locales/{lang}/{namespace}.json`:
+
+```json
+// shared/locales/en/products.json
+{
+  "title": "Products",
+  "create": "Create Product",
+  "edit": "Edit Product",
+  "delete": "Delete Product",
+  "name": "Name",
+  "price": "Price",
+  "stock": "Stock",
+  "save": "Save",
+  "cancel": "Cancel",
+  "form": {
+    "errors": {
+      "required": "This field is required",
+      "invalid": "Invalid value"
+    }
+  },
+  "list": {
+    "empty": "No products found",
+    "loading": "Loading products..."
+  },
+  "messages": {
+    "created": "Product created successfully",
+    "updated": "Product updated successfully",
+    "deleted": "Product deleted successfully"
+  }
+}
+```
+
+```json
+// shared/locales/es/products.json
+{
+  "title": "Productos",
+  "create": "Crear Producto",
+  "edit": "Editar Producto",
+  "delete": "Eliminar Producto",
+  "name": "Nombre",
+  "price": "Precio",
+  "stock": "Stock",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "form": {
+    "errors": {
+      "required": "Este campo es obligatorio",
+      "invalid": "Valor inválido"
+    }
+  },
+  "list": {
+    "empty": "No se encontraron productos",
+    "loading": "Cargando productos..."
+  },
+  "messages": {
+    "created": "Producto creado correctamente",
+    "updated": "Producto actualizado correctamente",
+    "deleted": "Producto eliminado correctamente"
+  }
+}
+```
+
+**Step 2: Update TypeScript Types**
+
+Add the new namespace to `shared/i18n/types.ts`:
+
+```typescript
+// shared/i18n/types.ts
+import "i18next";
+
+// Import type from English file (any language works for typing)
+import type productsEN from "@shared/locales/en/products.json";
+
+declare module "i18next" {
+  interface CustomTypeOptions {
+    defaultNS: "common";
+    resources: {
+      common: typeof commonEN;
+      auth: typeof authEN;
+      dashboard: typeof dashboardEN;
+      settings: typeof settingsEN;
+      toast: typeof toastEN;
+      products: typeof productsEN;  // ADD THIS LINE
+    };
+  }
+}
+```
+
+**Step 3: Update i18n Configuration**
+
+Register the new namespace in `shared/i18n/config.ts`:
 
 ```typescript
 // shared/i18n/config.ts
@@ -841,9 +937,27 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { mmkvLanguageDetector } from "./storage";
 
+// Import translations (synchronous for performance)
+import productsEN from "@shared/locales/en/products.json";
+import productsES from "@shared/locales/es/products.json";
+
 const resources = {
-  en: { common: commonEN, auth: authEN, dashboard: dashboardEN, products: productsEN },
-  es: { common: commonES, auth: authES, dashboard: dashboardES, products: productsES },
+  en: {
+    common: commonEN,
+    auth: authEN,
+    dashboard: dashboardEN,
+    settings: settingsEN,
+    toast: toastEN,
+    products: productsEN,  // ADD THIS
+  },
+  es: {
+    common: commonES,
+    auth: authES,
+    dashboard: dashboardES,
+    settings: settingsES,
+    toast: toastES,
+    products: productsES,  // ADD THIS
+  },
 } as const;
 
 i18n
@@ -853,6 +967,7 @@ i18n
     resources,
     fallbackLng: "es",
     defaultNS: "common",
+    ns: ["common", "auth", "dashboard", "settings", "toast", "products"],  // ADD HERE
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
     compatibilityJSON: "v4",
@@ -862,53 +977,150 @@ i18n
 export default i18n;
 ```
 
-**Using Translations:**
+**Step 4: Use Translations in Components**
 
 ```typescript
+// Using with specific namespace
 import { useTranslation } from 'react-i18next';
 
-function LoginScreen() {
-  const { t } = useTranslation('auth');
-  return <Button>{t('login')}</Button>;
+function ProductsScreen() {
+  const { t } = useTranslation('products');
+
+  return (
+    <View>
+      <Text>{t('title')}</Text>
+      <Button>{t('create')}</Button>
+    </View>
+  );
 }
 
-// With parameters
-t('welcome', { name: 'John' });
-
-// Nested keys
+// Using nested keys
 t('form.errors.required');
+t('messages.created');
+
+// Accessing common translations without namespace
+const { t: tCommon } = useTranslation('common');
+tCommon('save');  // From common.json
 ```
 
-**Translation Files:**
+**Step 5: Using in Screens with Proper Types**
+
+```typescript
+// typescript will autocomplete because of module augmentation
+function ProductsList() {
+  const { t } = useTranslation('products');
+
+  // VSCode will show:
+  // "title" | "create" | "edit" | "delete" | "name" | "price" | ...
+  const title = t('title');
+
+  return <Text>{title}</Text>;
+}
+```
+
+#### Translation File Structure Best Practices
+
+**Use nested keys by feature/area:**
 
 ```json
-// shared/locales/en/auth.json
 {
-  "login": "Login",
-  "register": "Register",
-  "email": "Email",
-  "password": "Password",
-  "form": {
-    "errors": {
-      "required": "This field is required",
-      "invalid": "Invalid value"
+  "products": {
+    "list": {
+      "title": "Products",
+      "empty": "No products",
+      "loading": "Loading..."
+    },
+    "form": {
+      "name": "Name",
+      "price": "Price",
+      "errors": {
+        "required": "Required",
+        "min": "Minimum {min} characters"
+      }
+    },
+    "actions": {
+      "create": "Create",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save"
+    },
+    "messages": {
+      "created": "Created",
+      "updated": "Updated",
+      "deleted": "Deleted"
     }
   }
 }
 ```
 
-**Language Switcher:**
+**With parameters:**
 
 ```typescript
-import { useLanguage } from '@/shared/hooks';
+t('form.errors.min', { min: 8 });  // "Minimum 8 characters"
+t('welcome', { name: 'John' });     // "Welcome, John!"
+```
+
+**Plurals:**
+
+```json
+{
+  "count": {
+    "zero": "No items",
+    "one": "1 item",
+    "few": "{count} items",
+    "many": "{count} items",
+    "other": "{count} items"
+  }
+}
+```
+
+```typescript
+t('count', { count: 0 });  // "No items"
+t('count', { count: 1 });  // "1 item"
+t('count', { count: 5 });  // "5 items"
+```
+
+#### Removing Translations
+
+To remove a translation namespace (e.g., `products`):
+
+1. Delete `shared/locales/en/products.json`
+2. Delete `shared/locales/es/products.json`
+3. Remove import and type from `shared/i18n/types.ts`
+4. Remove imports and resources from `shared/i18n/config.ts`
+5. Remove from `ns` array in config
+6. Update any screens using that namespace
+
+#### Language Switcher
+
+```typescript
+import { useTranslation } from 'react-i18next';
 
 function LanguageSwitcher() {
-  const { currentLanguage, changeLanguage } = useLanguage();
+  const { i18n } = useTranslation();
+
+  const changeLanguage = (lang: 'en' | 'es') => {
+    i18n.changeLanguage(lang);
+  };
+
   return (
-    <Button onPress={() => changeLanguage(currentLanguage === 'en' ? 'es' : 'en')}>
-      {currentLanguage.toUpperCase()}
-    </Button>
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      <Button title="EN" onPress={() => changeLanguage('en')} />
+      <Button title="ES" onPress={() => changeLanguage('es')} />
+    </View>
   );
+}
+```
+
+#### i18n Debug in Development
+
+```typescript
+import i18n from 'i18next';
+
+if (__DEV__) {
+  console.log('Current language:', i18n.language);
+  console.log('Available languages:', i18n.languages);
+  console.log('Translation:', i18n.t('products.title'));
 }
 ```
 
@@ -1048,9 +1260,28 @@ src/app/(tool)/{feature-name}/
 - React Hook Form + Zod resolver
 - Error handling with toasts
 
-### 11. Add i18n Keys
-- Create translation files in `shared/locales/`
-- Use `useTranslation` hook
+### 11. Add i18n Translations
+Follow the complete i18n flow:
+
+**Step 1 - Create translation files:**
+- Create `shared/locales/en/{namespace}.json`
+- Create `shared/locales/es/{namespace}.json`
+- Use nested keys by feature area
+
+**Step 2 - Update TypeScript types:**
+- Add import type to `shared/i18n/types.ts`
+- Add namespace to `CustomTypeOptions.resources`
+
+**Step 3 - Register namespace:**
+- Add imports to `shared/i18n/config.ts`
+- Add to `resources` object (en and es)
+- Add to `ns` array in `init()`
+
+**Step 4 - Use in components:**
+```typescript
+const { t } = useTranslation('namespace');
+t('key.nested');  // Type-safe autocomplete
+```
 
 ### 12. Test and Commit
 - Test on both iOS and Android
