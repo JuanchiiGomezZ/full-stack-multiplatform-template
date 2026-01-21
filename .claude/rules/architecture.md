@@ -222,7 +222,7 @@ frontend/
 │   │   │   │   ├── about/
 │   │   │   │   └── pricing/
 │   │   │   │
-│   │   │   └── (tool)/            # Protected pages
+│   │   │   └── (tabs)/            # Protected pages
 │   │   │       ├── dashboard/
 │   │   │       └── settings/
 │   │   │
@@ -305,6 +305,7 @@ feature-name/
 ```
 
 **Benefits:**
+
 - Co-location of related code
 - Clear boundaries
 - Easy to delete/move features
@@ -343,6 +344,7 @@ feature-name/
 ```
 
 **Rules:**
+
 1. **Server data** → React Query
 2. **Minimal client state** → Zustand
 3. **Forms** → React Hook Form
@@ -415,16 +417,19 @@ See `backend/prisma/schema.prisma` for complete schema.
 ### Key Patterns
 
 **Soft Delete:**
+
 - All models have `deletedAt` field
 - Queries filter `deletedAt: null`
 - Preserves data for audit trail
 
 **Audit Trail:**
+
 - `createdAt`, `updatedAt` tracked automatically
 - `createdBy`, `updatedBy` for user tracking
 - Helps with compliance and debugging
 
 **Multi-tenancy:**
+
 - `organizationId` on relevant models
 - Enforced at query level
 - JWT contains organization context

@@ -27,6 +27,7 @@ touch index.ts
 ```
 
 **Result:**
+
 ```
 features/products/
 ├── components/
@@ -82,18 +83,20 @@ export interface ProductsFilters {
 **File:** `frontend/src/features/products/services/products.service.ts`
 
 ```typescript
-import { api } from '@/shared/lib/axios';
+import { api } from "@/shared/lib/axios";
 import type {
   Product,
   CreateProductData,
   UpdateProductData,
   ProductsFilters,
-} from '../types/products.types';
-import type { PaginatedResponse } from '@/shared/types/common.types';
+} from "../types/products.types";
+import type { PaginatedResponse } from "@/shared/types/common.types";
 
 export const productsApi = {
-  getAll: async (filters: ProductsFilters): Promise<PaginatedResponse<Product>> => {
-    const { data } = await api.get('/products', { params: filters });
+  getAll: async (
+    filters: ProductsFilters,
+  ): Promise<PaginatedResponse<Product>> => {
+    const { data } = await api.get("/products", { params: filters });
     return data;
   },
 
@@ -103,11 +106,14 @@ export const productsApi = {
   },
 
   create: async (productData: CreateProductData): Promise<Product> => {
-    const { data } = await api.post('/products', productData);
+    const { data } = await api.post("/products", productData);
     return data;
   },
 
-  update: async (id: string, productData: UpdateProductData): Promise<Product> => {
+  update: async (
+    id: string,
+    productData: UpdateProductData,
+  ): Promise<Product> => {
     const { data } = await api.patch(`/products/${id}`, productData);
     return data;
   },
@@ -123,21 +129,24 @@ export const productsApi = {
 **File:** `frontend/src/features/products/hooks/useProducts.ts`
 
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productsApi } from '../services/products.service';
-import { toast } from 'sonner';
-import type { CreateProductData, UpdateProductData } from '../types/products.types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { productsApi } from "../services/products.service";
+import { toast } from "sonner";
+import type {
+  CreateProductData,
+  UpdateProductData,
+} from "../types/products.types";
 
 export function useProducts(page: number = 1, limit: number = 10) {
   return useQuery({
-    queryKey: ['products', { page, limit }],
+    queryKey: ["products", { page, limit }],
     queryFn: () => productsApi.getAll({ page, limit }),
   });
 }
 
 export function useProduct(id: string) {
   return useQuery({
-    queryKey: ['products', id],
+    queryKey: ["products", id],
     queryFn: () => productsApi.getById(id),
     enabled: !!id,
   });
@@ -149,11 +158,11 @@ export function useCreateProduct() {
   return useMutation({
     mutationFn: productsApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product created successfully');
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product created successfully");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create product');
+      toast.error(error.response?.data?.message || "Failed to create product");
     },
   });
 }
@@ -165,12 +174,12 @@ export function useUpdateProduct() {
     mutationFn: ({ id, data }: { id: string; data: UpdateProductData }) =>
       productsApi.update(id, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['products', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product updated successfully');
+      queryClient.invalidateQueries({ queryKey: ["products", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product updated successfully");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update product');
+      toast.error(error.response?.data?.message || "Failed to update product");
     },
   });
 }
@@ -181,11 +190,11 @@ export function useDeleteProduct() {
   return useMutation({
     mutationFn: productsApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product deleted successfully");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete product');
+      toast.error(error.response?.data?.message || "Failed to delete product");
     },
   });
 }
@@ -309,7 +318,7 @@ export function ProductForm({ product, onSubmit, isLoading }: ProductFormProps) 
 
 ### 6. Create Page Route
 
-**File:** `frontend/src/app/[locale]/(tool)/products/page.tsx`
+**File:** `frontend/src/app/[locale]/(tabs)/products/page.tsx`
 
 ```typescript
 'use client';
@@ -423,7 +432,7 @@ export default function ProductsPage() {
 
 ### 7. Create New Product Page
 
-**File:** `frontend/src/app/[locale]/(tool)/products/new/page.tsx`
+**File:** `frontend/src/app/[locale]/(tabs)/products/new/page.tsx`
 
 ```typescript
 'use client';
@@ -458,10 +467,10 @@ export default function NewProductPage() {
 **File:** `frontend/src/features/products/index.ts`
 
 ```typescript
-export * from './components/ProductForm';
-export * from './hooks/useProducts';
-export * from './services/products.service';
-export * from './types/products.types';
+export * from "./components/ProductForm";
+export * from "./hooks/useProducts";
+export * from "./services/products.service";
+export * from "./types/products.types";
 ```
 
 ### 9. Add Navigation Link
@@ -513,6 +522,7 @@ npm run dev
 ## Common Patterns
 
 **Feature structure:**
+
 ```
 features/feature-name/
 ├── components/       # Feature-specific components
@@ -525,10 +535,11 @@ features/feature-name/
 ```
 
 **Hook pattern:**
+
 ```typescript
 export function useResource(id: string) {
   return useQuery({
-    queryKey: ['resource', id],
+    queryKey: ["resource", id],
     queryFn: () => api.getById(id),
     enabled: !!id,
   });
@@ -536,14 +547,15 @@ export function useResource(id: string) {
 ```
 
 **Mutation pattern:**
+
 ```typescript
 export function useCreateResource() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: api.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['resources'] });
-      toast.success('Created');
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
+      toast.success("Created");
     },
   });
 }

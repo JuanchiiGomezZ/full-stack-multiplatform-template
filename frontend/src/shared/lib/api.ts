@@ -1,11 +1,7 @@
-"use client";
+'use client';
 
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  InternalAxiosRequestConfig,
-} from "axios";
-import { env } from "@/shared/config/env";
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { env } from '@/shared/config/env';
 
 /**
  * API Error Response
@@ -23,7 +19,7 @@ function createApiClient(): AxiosInstance {
   const client = axios.create({
     baseURL: env.NEXT_PUBLIC_API_URL,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     withCredentials: true, // Send cookies with requests
   });
@@ -48,8 +44,8 @@ function createApiClient(): AxiosInstance {
       // Handle common errors
       if (error.response?.status === 401) {
         // Handle unauthorized - redirect to login
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
         }
       }
 
@@ -63,7 +59,7 @@ function createApiClient(): AxiosInstance {
 /**
  * Configured Axios instance for API calls
  */
-export const apiClient = createApiClient();
+export const api = createApiClient();
 
 /**
  * Helper to extract error message from API response
@@ -71,7 +67,7 @@ export const apiClient = createApiClient();
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const apiError = error.response?.data as ApiError | undefined;
-    return apiError?.message || error.message || "An unexpected error occurred";
+    return apiError?.message || error.message || 'An unexpected error occurred';
   }
-  return "An unexpected error occurred";
+  return 'An unexpected error occurred';
 }

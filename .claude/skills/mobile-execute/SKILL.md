@@ -1,6 +1,15 @@
 ---
-name: execute-mobile
-description: Use when implementing features, fixing bugs, or refactoring in React Native Expo mobile app for iOS and Android. Requires feature-first architecture, Unistyles theming, Zustand + React Query state, and Expo Router navigation. For new UI, use frontend-design:frontend-design first. For new dependencies, consult Context7 MCP.
+name: mobile-execute
+description: >
+  Complete implementation guide for React Native Expo mobile app.
+  Trigger: When creating features, screens, components, or fixing bugs in mobile.
+license: MIT
+metadata:
+  author: juanma-gomez
+  version: "2.0"
+  scope: [mobile]
+  auto_invoke: "mobile, expo, react native, screen, feature, unistyles, mmkv, securestore"
+allowed-tools: Read, Edit, Write, Glob, Grep, Bash, Task
 ---
 
 # React Native Expo Senior Developer Skill
@@ -10,6 +19,7 @@ description: Use when implementing features, fixing bugs, or refactoring in Reac
 This skill provides comprehensive guidance for implementing features in the project's React Native Expo mobile application. It documents the established architecture patterns, conventions, and best practices that should be followed for all mobile development tasks.
 
 **Key capabilities:**
+
 - Create new features following the feature-first pattern
 - Implement screens with proper navigation and state management
 - Handle data with React Query (server state) and Zustand (client state)
@@ -23,15 +33,16 @@ This skill provides comprehensive guidance for implementing features in the proj
 
 **This skill is for IMPLEMENTATION only.** It is NOT for writing plans.
 
-| Use Case | Skill to Use |
-|----------|--------------|
-| Planning a new feature, defining requirements | `superpowers:writing-plans` |
-| Exploring ideas and clarifying scope | `superpowers:brainstorming` |
-| Designing new UI screens | `frontend-design:frontend-design` |
-| Researching new libraries | Context7 MCP or Web Search |
-| **Implementing mobile features** | **`execute-mobile`** |
+| Use Case                                      | Skill to Use                      |
+| --------------------------------------------- | --------------------------------- |
+| Planning a new feature, defining requirements | `superpowers:writing-plans`       |
+| Exploring ideas and clarifying scope          | `superpowers:brainstorming`       |
+| Designing new UI screens                      | `frontend-design:frontend-design` |
+| Researching new libraries                     | Context7 MCP or Web Search        |
+| **Implementing mobile features**              | **`mobile-execute`**              |
 
-**When to invoke `execute-mobile`:**
+**When to invoke `mobile-execute`:**
+
 - Creating a new feature module
 - Implementing new screens
 - Adding form validation
@@ -41,6 +52,7 @@ This skill provides comprehensive guidance for implementing features in the proj
 - Any mobile coding task
 
 **When NOT to use:**
+
 - Writing implementation plans (use `writing-plans`)
 - Exploring requirements (use `brainstorming`)
 - Designing UI (use `frontend-design:frontend-design`)
@@ -64,7 +76,7 @@ mobile/src/
 │   │   ├── _layout.tsx     # Auth stack layout
 │   │   ├── login/
 │   │   └── register/
-│   └── (tool)/             # Protected routes (tabs)
+│   └── (tabs)/             # Protected routes (tabs)
 │       ├── _layout.tsx     # Protected tabs + auth check
 │       ├── dashboard/
 │       └── settings/
@@ -95,17 +107,20 @@ mobile/src/
 ### Directory Responsibilities
 
 **App (`app/`):** Expo Router file-based routing
+
 - `_layout.tsx` - Root layout with providers and gesture handler
 - `index.tsx` - Initial redirect based on auth state
 - `(auth)/` - Public authentication routes
-- `(tool)/` - Protected routes with tabs
+- `(tabs)/` - Protected routes with tabs
 
 **Features (`features/`):** Feature-specific code organized by domain
+
 - Each feature is self-contained with all its dependencies
 - Follows canonical pattern from `auth` feature
 - Co-located tests, types, hooks, services
 
 **Shared (`shared/`):** Cross-cutting resources
+
 - `components/ui/` - Base UI components from shadcn/ui patterns
 - `components/common/` - Shared composite components
 - `lib/` - Third-party library configurations
@@ -113,24 +128,25 @@ mobile/src/
 - `utils/` - Shared utilities (storage, helpers)
 
 **Constants (`constants/`):** App-wide constants
+
 - API URL configuration
 - Storage keys
 - Other app-wide values
 
 ### Key Files Reference
 
-| File | Purpose |
-|------|---------|
-| `app/_layout.tsx` | Root layout with GestureHandler, BottomSheet, Providers, Toast |
-| `app/index.tsx` | Auth redirect with navigation state check |
-| `app/(tool)/_layout.tsx` | Protected layout with Tabs, auth check, logout |
-| `shared/lib/api.ts` | Axios instance with auth interceptor and token refresh |
-| `shared/utils/storage.ts` | MMKV + SecureStore abstractions |
-| `shared/styles/unistyles.ts` | Unistyles theme configuration |
-| `features/auth/stores/auth.store.ts` | Auth state with Zustand + SecureStore |
-| `features/auth/hooks/useAuth.ts` | Auth React Query hooks |
-| `features/auth/services/auth.service.ts` | Auth API service |
-| `constants/index.ts` | App constants and storage keys |
+| File                                     | Purpose                                                        |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| `app/_layout.tsx`                        | Root layout with GestureHandler, BottomSheet, Providers, Toast |
+| `app/index.tsx`                          | Auth redirect with navigation state check                      |
+| `app/(tabs)/_layout.tsx`                 | Protected layout with Tabs, auth check, logout                 |
+| `shared/lib/api.ts`                      | Axios instance with auth interceptor and token refresh         |
+| `shared/utils/storage.ts`                | MMKV + SecureStore abstractions                                |
+| `shared/styles/unistyles.ts`             | Unistyles theme configuration                                  |
+| `features/auth/stores/auth.store.ts`     | Auth state with Zustand + SecureStore                          |
+| `features/auth/hooks/useAuth.ts`         | Auth React Query hooks                                         |
+| `features/auth/services/auth.service.ts` | Auth API service                                               |
+| `constants/index.ts`                     | App constants and storage keys                                 |
 
 ---
 
@@ -160,19 +176,21 @@ features/{feature-name}/
 ```
 
 **Principles:**
+
 - Components in `features/` = feature-specific
 - Components in `shared/components/ui/` = reusable base components
 - Never mix - if only for auth, put in `features/auth/`
 
 **Index.ts pattern:**
+
 ```typescript
 // features/auth/index.ts
-export * from './types';
-export * from './schemas';
-export * from './services';
-export * from './hooks';
-export * from './stores';
-export * from './components';
+export * from "./types";
+export * from "./schemas";
+export * from "./services";
+export * from "./hooks";
+export * from "./stores";
+export * from "./components";
 ```
 
 ### Storage Layer - MMKV + SecureStore
@@ -184,24 +202,24 @@ The app uses two-tier storage with specific use cases:
 Used for: Theme preferences, onboarding status, feature flags, cache data
 
 ```typescript
-import { storage } from '@/shared/utils/storage';
+import { storage } from "@/shared/utils/storage";
 
 // Store object
-storage.setObject('userPreferences', { theme: 'dark', language: 'en' });
+storage.setObject("userPreferences", { theme: "dark", language: "en" });
 
 // Retrieve object
-const prefs = storage.getObject<UserPreferences>('userPreferences');
+const prefs = storage.getObject<UserPreferences>("userPreferences");
 
 // String operations
-storage.set('key', 'value');
-const value = storage.getString('key');
+storage.set("key", "value");
+const value = storage.getString("key");
 
 // Boolean operations
-storage.setBoolean('enabled', true);
-const enabled = storage.getBoolean('enabled');
+storage.setBoolean("enabled", true);
+const enabled = storage.getBoolean("enabled");
 
 // Remove
-storage.remove('key');
+storage.remove("key");
 
 // Clear all
 storage.clearAll();
@@ -212,7 +230,7 @@ storage.clearAll();
 Used for: Access tokens, refresh tokens, user credentials
 
 ```typescript
-import { secureStorageApi } from '@/shared/utils/storage';
+import { secureStorageApi } from "@/shared/utils/storage";
 
 // Tokens
 await secureStorageApi.setAccessToken(token);
@@ -233,9 +251,9 @@ await secureStorageApi.clearAuthData();
 For persisting Zustand stores with MMKV:
 
 ```typescript
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import { zustandStorage } from '@/shared/utils/storage';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { zustandStorage } from "@/shared/utils/storage";
 
 interface AuthState {
   user: User | null;
@@ -253,11 +271,11 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, isAuthenticated: false }),
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       storage: createJSONStorage(() => zustandStorage),
       partialize: (state) => ({ user: state.user }),
-    }
-  )
+    },
+  ),
 );
 ```
 
@@ -266,15 +284,16 @@ export const useAuthStore = create<AuthState>()(
 ```typescript
 // constants/index.ts
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'access_token',
-  REFRESH_TOKEN: 'refresh_token',
-  USER: 'user',
-  THEME: 'app_theme',
-  LANGUAGE: 'language',
-  ONBOARDING_COMPLETED: 'onboarding_completed',
+  ACCESS_TOKEN: "access_token",
+  REFRESH_TOKEN: "refresh_token",
+  USER: "user",
+  THEME: "app_theme",
+  LANGUAGE: "language",
+  ONBOARDING_COMPLETED: "onboarding_completed",
 } as const;
 
-export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+export const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 ```
 
 ### API Layer - Axios with Interceptors
@@ -283,13 +302,13 @@ The app uses a pre-configured Axios instance with automatic auth and token refre
 
 ```typescript
 // shared/lib/api.ts
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { API_URL, STORAGE_KEYS } from '@/constants';
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+import { API_URL, STORAGE_KEYS } from "@/constants";
 
 export const api = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { "Content-Type": "application/json" },
 });
 
 // Request interceptor - add auth token
@@ -301,7 +320,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor - handle 401 with token refresh
@@ -312,12 +331,22 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshToken = await SecureStore.getItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
+        const refreshToken = await SecureStore.getItemAsync(
+          STORAGE_KEYS.REFRESH_TOKEN,
+        );
         if (refreshToken) {
-          const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+          const response = await axios.post(`${API_URL}/auth/refresh`, {
+            refreshToken,
+          });
           const { accessToken, refreshToken: newRefreshToken } = response.data;
-          await SecureStore.setItemAsync(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-          await SecureStore.setItemAsync(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+          await SecureStore.setItemAsync(
+            STORAGE_KEYS.ACCESS_TOKEN,
+            accessToken,
+          );
+          await SecureStore.setItemAsync(
+            STORAGE_KEYS.REFRESH_TOKEN,
+            newRefreshToken,
+          );
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         }
@@ -327,7 +356,7 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -339,24 +368,21 @@ Each feature has its own service file for API calls:
 
 ```typescript
 // features/products/services/products.service.ts
-import { api } from '@/shared/lib/api';
-import type { Product, CreateProductDto, UpdateProductDto } from '../types';
+import { api } from "@/shared/lib/api";
+import type { Product, CreateProductDto, UpdateProductDto } from "../types";
 
 export const productsApi = {
   getAll: (params?: { page?: number; limit?: number; search?: string }) =>
-    api.get<Product[]>('/products', { params }),
+    api.get<Product[]>("/products", { params }),
 
-  getById: (id: string) =>
-    api.get<Product>(`/products/${id}`),
+  getById: (id: string) => api.get<Product>(`/products/${id}`),
 
-  create: (data: CreateProductDto) =>
-    api.post<Product>('/products', data),
+  create: (data: CreateProductDto) => api.post<Product>("/products", data),
 
   update: (id: string, data: UpdateProductDto) =>
     api.patch<Product>(`/products/${id}`, data),
 
-  delete: (id: string) =>
-    api.delete<void>(`/products/${id}`),
+  delete: (id: string) => api.delete<void>(`/products/${id}`),
 };
 ```
 
@@ -366,16 +392,17 @@ Data fetching uses TanStack Query (React Query) with proper patterns:
 
 ```typescript
 // features/products/hooks/useProducts.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productsApi } from '../services/products.service';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { productsApi } from "../services/products.service";
+import { toast } from "sonner";
 
 // Query keys
 export const productsQueryKeys = {
-  all: ['products'] as const,
-  lists: () => [...productsQueryKeys.all, 'list'] as const,
-  list: (filters: ProductFilters) => [...productsQueryKeys.lists(), filters] as const,
-  details: () => [...productsQueryKeys.all, 'detail'] as const,
+  all: ["products"] as const,
+  lists: () => [...productsQueryKeys.all, "list"] as const,
+  list: (filters: ProductFilters) =>
+    [...productsQueryKeys.lists(), filters] as const,
+  details: () => [...productsQueryKeys.all, "detail"] as const,
   detail: (id: string) => [...productsQueryKeys.details(), id] as const,
 };
 
@@ -403,7 +430,7 @@ export function useDeleteProduct() {
     mutationFn: productsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productsQueryKeys.all });
-      toast.success('Product deleted');
+      toast.success("Product deleted");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -417,12 +444,14 @@ export function useDeleteProduct() {
 The app uses a hybrid state management approach:
 
 **Server State (React Query):**
+
 - Data from API
 - Automatic caching and refetching
 - Optimistic updates
 - Query invalidation
 
 **Client State (Zustand):**
+
 - Auth state (user, tokens, isAuthenticated)
 - UI state (modals, theme preferences)
 - Local preferences (filters, sorting)
@@ -431,10 +460,10 @@ The app uses a hybrid state management approach:
 
 ```typescript
 // features/auth/stores/auth.store.ts
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
-import { secureStorageApi, zustandStorage } from '@/shared/utils/storage';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import * as SecureStore from "expo-secure-store";
+import { secureStorageApi, zustandStorage } from "@/shared/utils/storage";
 
 interface AuthState {
   user: User | null;
@@ -446,7 +475,11 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   setLoading: (loading: boolean) => void;
-  login: (user: User, accessToken: string, refreshToken: string) => Promise<void>;
+  login: (
+    user: User,
+    accessToken: string,
+    refreshToken: string,
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -474,18 +507,19 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       storage: createJSONStorage(() => zustandStorage),
       partialize: (state) => ({
         user: state.user,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Selectors for performance
 export const selectUser = (state: AuthState) => state.user;
-export const selectIsAuthenticated = (state: AuthState) => state.isAuthenticated;
+export const selectIsAuthenticated = (state: AuthState) =>
+  state.isAuthenticated;
 export const selectIsLoading = (state: AuthState) => state.isLoading;
 ```
 
@@ -511,7 +545,7 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tool)" />
+            <Stack.Screen name="(tabs)" />
           </Stack>
           <Toast />
         </Providers>
@@ -551,7 +585,7 @@ export default function Index() {
     if (!isLayoutReady || isLoading) return;
 
     const timer = setTimeout(() => {
-      router.replace(isAuthenticated ? "/(tool)/dashboard" : "/(auth)/login");
+      router.replace(isAuthenticated ? "/(tabs)/dashboard" : "/(auth)/login");
     }, 100);
 
     return () => clearTimeout(timer);
@@ -580,7 +614,7 @@ export default function AuthLayout() {
 **Tool Group (Protected Routes with Auth Check in Layout):**
 
 ```typescript
-// app/(tool)/_layout.tsx
+// app/(tabs)/_layout.tsx
 import { useEffect } from 'react';
 import { router, Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -650,12 +684,13 @@ export default function ToolLayout() {
 }
 ```
 
-**IMPORTANT:** Auth check goes in the _layout, NOT in a ProtectedRoute component. This is the established pattern.
+**IMPORTANT:** Auth check goes in the \_layout, NOT in a ProtectedRoute component. This is the established pattern.
 
 **Dynamic Routes:**
+
 ```typescript
-// app/(tool)/products/[id]/index.tsx
-import { useLocalSearchParams } from 'expo-router';
+// app/(tabs)/products/[id]/index.tsx
+import { useLocalSearchParams } from "expo-router";
 
 export default function ProductDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -668,6 +703,7 @@ export default function ProductDetail() {
 The app uses base UI components from `shared/components/ui/` that MUST be reused:
 
 **Available Base Components:**
+
 - `Button` - Action buttons with variants
 - `TextInput` - Text input with label and error
 - `ScreenWrapper` - Screen container with padding
@@ -921,7 +957,7 @@ declare module "i18next" {
       dashboard: typeof dashboardEN;
       settings: typeof settingsEN;
       toast: typeof toastEN;
-      products: typeof productsEN;  // ADD THIS LINE
+      products: typeof productsEN; // ADD THIS LINE
     };
   }
 }
@@ -948,7 +984,7 @@ const resources = {
     dashboard: dashboardEN,
     settings: settingsEN,
     toast: toastEN,
-    products: productsEN,  // ADD THIS
+    products: productsEN, // ADD THIS
   },
   es: {
     common: commonES,
@@ -956,7 +992,7 @@ const resources = {
     dashboard: dashboardES,
     settings: settingsES,
     toast: toastES,
-    products: productsES,  // ADD THIS
+    products: productsES, // ADD THIS
   },
 } as const;
 
@@ -967,7 +1003,7 @@ i18n
     resources,
     fallbackLng: "es",
     defaultNS: "common",
-    ns: ["common", "auth", "dashboard", "settings", "toast", "products"],  // ADD HERE
+    ns: ["common", "auth", "dashboard", "settings", "toast", "products"], // ADD HERE
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
     compatibilityJSON: "v4",
@@ -1056,8 +1092,8 @@ function ProductsList() {
 **With parameters:**
 
 ```typescript
-t('form.errors.min', { min: 8 });  // "Minimum 8 characters"
-t('welcome', { name: 'John' });     // "Welcome, John!"
+t("form.errors.min", { min: 8 }); // "Minimum 8 characters"
+t("welcome", { name: "John" }); // "Welcome, John!"
 ```
 
 **Plurals:**
@@ -1075,9 +1111,9 @@ t('welcome', { name: 'John' });     // "Welcome, John!"
 ```
 
 ```typescript
-t('count', { count: 0 });  // "No items"
-t('count', { count: 1 });  // "1 item"
-t('count', { count: 5 });  // "5 items"
+t("count", { count: 0 }); // "No items"
+t("count", { count: 1 }); // "1 item"
+t("count", { count: 5 }); // "5 items"
 ```
 
 #### Removing Translations
@@ -1115,12 +1151,12 @@ function LanguageSwitcher() {
 #### i18n Debug in Development
 
 ```typescript
-import i18n from 'i18next';
+import i18n from "i18next";
 
 if (__DEV__) {
-  console.log('Current language:', i18n.language);
-  console.log('Available languages:', i18n.languages);
-  console.log('Translation:', i18n.t('products.title'));
+  console.log("Current language:", i18n.language);
+  console.log("Available languages:", i18n.languages);
+  console.log("Translation:", i18n.t("products.title"));
 }
 ```
 
@@ -1202,12 +1238,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 When implementing a new feature, follow this checklist:
 
 ### 1. Planning Phase
+
 - [ ] Feature requirements defined
 - [ ] API endpoints identified
 - [ ] UI design approved (frontend-design:frontend-design)
 - [ ] Implementation plan created (if needed)
 
 ### 2. Create Feature Structure
+
 ```bash
 mobile/src/features/{feature-name}/
 ├── components/
@@ -1221,8 +1259,9 @@ mobile/src/features/{feature-name}/
 ```
 
 ### 3. Create Routes
+
 ```
-src/app/(tool)/{feature-name}/
+src/app/(tabs)/{feature-name}/
 ├── _layout.tsx          # With auth check if protected
 ├── list/
 │   └── index.tsx
@@ -1231,59 +1270,72 @@ src/app/(tool)/{feature-name}/
 ```
 
 ### 4. Implement Types
+
 - Create `types/{feature}.types.ts`
 - Define interfaces for data models, DTOs, params
 
 ### 5. Create Zod Schemas
+
 - Create `schemas/{feature}.schema.ts`
 - Define validation rules for forms
 
 ### 6. Implement Service
+
 - Create `services/{feature}.service.ts`
 - Use `api` from `@/shared/lib/api`
 
 ### 7. Create React Query Hooks
+
 - Create `hooks/use{Feature}.ts`
 - Define query keys
 - Implement mutations with invalidation
 
 ### 8. Create Zustand Store (if needed)
+
 - Create `stores/{feature}.store.ts`
 - Use `zustandStorage` for persistence
 
 ### 9. Implement Components
+
 - Use base components from `shared/components/ui/`
 - Use Unistyles for styling
 - Follow feature-first pattern
 
 ### 10. Add Forms (if needed)
+
 - React Hook Form + Zod resolver
 - Error handling with toasts
 
 ### 11. Add i18n Translations
+
 Follow the complete i18n flow:
 
 **Step 1 - Create translation files:**
+
 - Create `shared/locales/en/{namespace}.json`
 - Create `shared/locales/es/{namespace}.json`
 - Use nested keys by feature area
 
 **Step 2 - Update TypeScript types:**
+
 - Add import type to `shared/i18n/types.ts`
 - Add namespace to `CustomTypeOptions.resources`
 
 **Step 3 - Register namespace:**
+
 - Add imports to `shared/i18n/config.ts`
 - Add to `resources` object (en and es)
 - Add to `ns` array in `init()`
 
 **Step 4 - Use in components:**
+
 ```typescript
-const { t } = useTranslation('namespace');
-t('key.nested');  // Type-safe autocomplete
+const { t } = useTranslation("namespace");
+t("key.nested"); // Type-safe autocomplete
 ```
 
 ### 12. Test and Commit
+
 - Test on both iOS and Android
 - Commit with descriptive message
 
@@ -1295,46 +1347,55 @@ t('key.nested');  // Type-safe autocomplete
 
 ```typescript
 // API
-import { api } from '@/shared/lib/api';
+import { api } from "@/shared/lib/api";
 
 // Storage
-import { storage, secureStorageApi, zustandStorage } from '@/shared/utils/storage';
+import {
+  storage,
+  secureStorageApi,
+  zustandStorage,
+} from "@/shared/utils/storage";
 
 // Auth
-import { useAuthStore, selectIsAuthenticated } from '@/features/auth/stores/auth.store';
+import {
+  useAuthStore,
+  selectIsAuthenticated,
+} from "@/features/auth/stores/auth.store";
 
 // React Query
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Navigation
-import { router } from 'expo-router';
-import { useLocalSearchParams } from 'expo-router';
+import { router } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 // Styles
-import { useStyles } from 'react-native-unistyles';
+import { useStyles } from "react-native-unistyles";
 
 // i18n
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 // Forms
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 ```
 
 ### Common Patterns
 
 **API Call:**
+
 ```typescript
-const { data } = await api.get('/endpoint');
-await api.post('/endpoint', payload);
+const { data } = await api.get("/endpoint");
+await api.post("/endpoint", payload);
 await api.patch(`/endpoint/${id}`, payload);
 await api.delete(`/endpoint/${id}`);
 ```
 
 **React Query:**
+
 ```typescript
 const query = useQuery({
-  queryKey: ['key', id],
+  queryKey: ["key", id],
   queryFn: () => api.get(`/endpoint/${id}`),
   enabled: !!id,
 });
@@ -1342,31 +1403,36 @@ const query = useQuery({
 const mutation = useMutation({
   mutationFn: api.post,
   onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['key'] });
+    queryClient.invalidateQueries({ queryKey: ["key"] });
   },
 });
 ```
 
 **Zustand Store:**
+
 ```typescript
 create<State>()(
   persist(
-    (set) => ({ /* actions */ }),
-    { name: 'storage-key', storage: createJSONStorage(() => zustandStorage) }
-  )
+    (set) => ({
+      /* actions */
+    }),
+    { name: "storage-key", storage: createJSONStorage(() => zustandStorage) },
+  ),
 );
 ```
 
 **Navigation:**
+
 ```typescript
-router.replace('/(auth)/login');
-router.push('/(tool)/products');
+router.replace("/(auth)/login");
+router.push("/(tabs)/products");
 router.back();
 ```
 
 **Platform Check:**
+
 ```typescript
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 Platform.OS; // 'ios' | 'android'
 ```
 
@@ -1375,22 +1441,25 @@ Platform.OS; // 'ios' | 'android'
 ## Error Handling
 
 ### API Errors
+
 ```typescript
 try {
-  await api.post('/endpoint', data);
-  toast.success('Success');
+  await api.post("/endpoint", data);
+  toast.success("Success");
 } catch (error) {
-  toast.error(error.response?.data?.message || 'Error');
+  toast.error(error.response?.data?.message || "Error");
 }
 ```
 
 ### Form Validation Errors
+
 ```typescript
 const form = useForm({ resolver: zodResolver(schema) });
 // Errors accessible via form.formState.errors
 ```
 
 ### Async Storage Errors
+
 All storage operations have try-catch with console.error logging.
 
 ---
@@ -1398,70 +1467,79 @@ All storage operations have try-catch with console.error logging.
 ## Debugging Tips
 
 ### Check Auth State
+
 ```typescript
-import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { useAuthStore } from "@/features/auth/stores/auth.store";
 console.log(useAuthStore.getState());
 ```
 
 ### View React Query Cache
+
 React Query DevTools available in development (bottom-left icon).
 
 ### Check Storage
+
 ```typescript
-import { storage, secureStorageApi } from '@/shared/utils/storage';
+import { storage, secureStorageApi } from "@/shared/utils/storage";
 storage.getAllKeys(); // MMKV keys
 await secureStorageApi.getAccessToken(); // Token exists
 ```
 
 ### i18n Debug
+
 ```typescript
-import i18n from 'i18next';
+import i18n from "i18next";
 console.log(i18n.language); // Current language
-console.log(i18n.t('key')); // Translation value
+console.log(i18n.t("key")); // Translation value
 ```
 
 ---
 
 ## Tech Stack Summary
 
-| Category | Library | Purpose |
-|----------|---------|---------|
-| Framework | Expo 54 | Mobile framework |
-| Navigation | Expo Router | File-based routing |
-| State - Server | React Query | Data fetching, caching |
-| State - Client | Zustand | Client state, persistence |
-| Storage - General | MMKV | Fast local storage |
-| Storage - Sensitive | SecureStore | Encrypted token storage |
-| Styling | Unistyles | Theme-based styling |
-| Forms | React Hook Form | Form handling |
-| Validation | Zod | Schema validation |
-| i18n | i18next + MMKV | Internationalization |
-| HTTP | Axios | API client |
-| Gestures | React Native Gesture Handler | Touch interactions |
-| Modals | Bottom Sheet | Sheet modals |
-| Toasts | Sonner Native | Notifications |
+| Category            | Library                      | Purpose                   |
+| ------------------- | ---------------------------- | ------------------------- |
+| Framework           | Expo 54                      | Mobile framework          |
+| Navigation          | Expo Router                  | File-based routing        |
+| State - Server      | React Query                  | Data fetching, caching    |
+| State - Client      | Zustand                      | Client state, persistence |
+| Storage - General   | MMKV                         | Fast local storage        |
+| Storage - Sensitive | SecureStore                  | Encrypted token storage   |
+| Styling             | Unistyles                    | Theme-based styling       |
+| Forms               | React Hook Form              | Form handling             |
+| Validation          | Zod                          | Schema validation         |
+| i18n                | i18next + MMKV               | Internationalization      |
+| HTTP                | Axios                        | API client                |
+| Gestures            | React Native Gesture Handler | Touch interactions        |
+| Modals              | Bottom Sheet                 | Sheet modals              |
+| Toasts              | Sonner Native                | Notifications             |
 
 ---
 
 ## File Organization Best Practices
 
 ### Component Location Rules
+
 - Base reusable components → `shared/components/ui/`
 - Composite shared components → `shared/components/common/`
 - Feature-specific components → `features/{feature}/components/`
 
 ### Hook Location Rules
+
 - Shared hooks → `shared/hooks/`
 - Feature hooks → `features/{feature}/hooks/`
 
 ### Utility Location Rules
+
 - Shared utilities → `shared/utils/`
 - Feature utilities → `features/{feature}/utils/`
 
 ### Service Location Rules
+
 - API services per feature → `features/{feature}/services/`
 
 ### Never
+
 - Create components outside feature or shared
 - Put feature code in root directories
 - Mix responsibilities across directories
