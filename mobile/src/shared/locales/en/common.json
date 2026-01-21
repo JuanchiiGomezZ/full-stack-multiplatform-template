@@ -19,5 +19,10 @@
     "invalid_email": "Invalid email",
     "network_error": "Connection error",
     "generic": "An error occurred"
+  },
+  "onboarding": {
+    "welcome": "Welcome!",
+    "description": "Nice to meet you, {{name}}! We're happy to have you here.",
+    "get_started": "Get Started"
   }
 }

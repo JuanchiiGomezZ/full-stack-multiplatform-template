@@ -21,5 +21,6 @@ declare module "i18next" {
       auth: typeof authEN;
       toast: typeof toastEN;
     };
+    returnNull: false;
   }
 }

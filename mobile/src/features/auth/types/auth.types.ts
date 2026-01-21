@@ -1,20 +1,23 @@
-export type Role = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+export type Role = 'USER' | 'ADMIN';
 
 export interface User {
   id: string;
   email: string;
   firstName: string | null;
   lastName: string | null;
+  avatarUrl: string | null;
   role: Role;
-  isActive: boolean;
-  emailVerified: boolean;
-  organizationId: string | null;
+  hasCompletedOnboarding: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface AuthResponse {
   user: User;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface TokensResponse {
   accessToken: string;
   refreshToken: string;
 }

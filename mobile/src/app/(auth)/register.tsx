@@ -113,7 +113,7 @@ export default function RegisterScreen() {
         <Text
           variant="body"
           color="primary"
-          onPress={() => router.replace("/(auth)/login" as const)}
+          onPress={() => router.replace("/(auth)/login" as string)}
         >
           {t("register.sign_in")}
         </Text>

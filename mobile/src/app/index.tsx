@@ -1,15 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { router, useRootNavigationState } from "expo-router";
-import { useAuthStore, selectIsAuthenticated } from "@/features/auth/stores/auth.store";
+import {
+  useAuthStore,
+  selectIsAuthenticated,
+  selectHasHydrated,
+} from "@/features/auth/stores/auth.store";
 import { ScreenWrapper } from "@/shared/components/ui";
 
 export default function Index() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const hasHydrated = useAuthStore(selectHasHydrated);
+  const user = useAuthStore((state) => state.user);
   const rootNavigationState = useRootNavigationState();
   const [isLayoutReady, setIsLayoutReady] = useState(false);
 
-  // Callback que se llama cuando el navigator está listo
   const onNavigationStateChange = useCallback(() => {
     if (rootNavigationState?.key != null) {
       setIsLayoutReady(true);
@@ -21,22 +25,26 @@ export default function Index() {
   }, [onNavigationStateChange]);
 
   useEffect(() => {
-    // Solo navegar cuando:
-    // 1. El layout esté listo
-    // 2. La carga auth haya terminado
-    if (!isLayoutReady || isLoading) return;
+    // Wait for both layout and store hydration
+    if (!isLayoutReady || !hasHydrated) {
+      return;
+    }
 
-    // Usar setTimeout para asegurar que el navigator está completamente listo
     const timer = setTimeout(() => {
-      if (isAuthenticated) {
-        //TODO: Navigate to dashboard
+      if (isAuthenticated && user) {
+        // Redirect based on onboarding status
+        if (user.hasCompletedOnboarding) {
+          router.replace("/(tabs)/home");
+        } else {
+          router.replace("/(onboarding)");
+        }
       } else {
         router.replace("/(auth)/login");
       }
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [isLayoutReady, isLoading, isAuthenticated]);
+  }, [isLayoutReady, hasHydrated, isAuthenticated, user]);
 
   return <ScreenWrapper loading centered />;
 }

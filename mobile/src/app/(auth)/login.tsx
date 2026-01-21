@@ -1,15 +1,19 @@
-import { useAuth } from "@/features/auth";
-import { useForm } from "@/shared/hooks";
-import { loginSchema, type LoginFormData } from "@/features/auth/schemas/auth.schema";
-import { Controller } from "react-hook-form";
-import { router } from "expo-router";
-import { StyleSheet } from "react-native-unistyles";
-import { View } from "react-native";
-import { Button, TextInput, Text, ScreenWrapper } from "@/shared/components/ui";
-import { useTranslation } from "react-i18next";
+import { useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
+import { useForm } from '@/shared/hooks';
+import { loginSchema, type LoginFormData } from '@/features/auth/schemas/auth.schema';
+import { useAuth, useLoginWithGoogle } from '@/features/auth/hooks/useAuth';
+import { Controller } from 'react-hook-form';
+import { useUnistyles } from 'react-native-unistyles';
+import { Button, TextInput, Text, ScreenWrapper } from '@/shared/components/ui';
+import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton';
 
 export default function LoginScreen() {
-  const { t } = useTranslation("auth");
+  const { t } = useTranslation('auth');
+  const { theme } = useUnistyles();
+
   const {
     control,
     handleSubmit,
@@ -17,6 +21,7 @@ export default function LoginScreen() {
   } = useForm({ schema: loginSchema });
 
   const { login, isLoggingIn, loginError } = useAuth();
+  const loginWithGoogle = useLoginWithGoogle();
 
   const onSubmit = async (data: LoginFormData) => {
     try {
@@ -26,24 +31,41 @@ export default function LoginScreen() {
     }
   };
 
+  const handleGoogleError = useCallback((error: Error) => {
+    console.error('Google login error:', error);
+  }, []);
+
   return (
     <ScreenWrapper centered={{ y: true }}>
-      <Text variant="h1">{t("login.title")}</Text>
-      <Text variant="body" color="secondary">
-        {t("login.subtitle")}
+      <Text variant="h1">{t('login.title')}</Text>
+      <Text variant="body" color="secondary" style={styles.subtitle}>
+        {t('login.subtitle')}
       </Text>
+
+      <View style={styles.googleContainer}>
+        <GoogleSignInButton onError={handleGoogleError} />
+      </View>
+
+      <View style={styles.divider}>
+        <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
+        <Text variant="caption" color="secondary" style={styles.dividerText}>
+          {t('login.or_continue_with')}
+        </Text>
+        <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
+      </View>
+
       <Controller
         control={control}
         name="email"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            label={t("labels.email")}
+            label={t('labels.email')}
             value={value}
             onChangeText={onChange}
             onBlur={onBlur}
             autoCapitalize="none"
             keyboardType="email-address"
-            placeholder={t("login.email_placeholder")}
+            placeholder={t('login.email_placeholder')}
             error={errors.email?.message}
           />
         )}
@@ -54,12 +76,12 @@ export default function LoginScreen() {
         name="password"
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            label={t("labels.password")}
+            label={t('labels.password')}
             value={value}
             onChangeText={onChange}
             onBlur={onBlur}
             secureTextEntry
-            placeholder={t("login.password_placeholder")}
+            placeholder={t('login.password_placeholder')}
             error={errors.password?.message}
           />
         )}
@@ -71,35 +93,52 @@ export default function LoginScreen() {
         </Text>
       )}
 
-      <Button title={t("login.button")} onPress={handleSubmit(onSubmit)} loading={isLoggingIn} />
+      <Button
+        title={t('login.button')}
+        onPress={handleSubmit(onSubmit)}
+        loading={isLoggingIn}
+      />
 
       <View style={styles.linkContainer}>
-        <Text variant="body" color="primary">
-          {t("login.no_account")}{" "}
+        <Text variant="body" color="secondary">
+          {t('login.no_account')}{' '}
         </Text>
-        <Text variant="body" color="primary" onPress={() => router.push("/(auth)/register")}>
-          {t("login.sign_up")}
+        <Text variant="body" color="primary" onPress={() => router.replace('/(auth)/register' as string)}>
+          {t('login.sign_up')}
         </Text>
       </View>
     </ScreenWrapper>
   );
 }
 
-const styles = StyleSheet.create((theme) => ({
-  buttonContainer: {
-    marginTop: theme.spacing(2), // 8px
+const styles = StyleSheet.create({
+  subtitle: {
+    marginBottom: 32,
   },
-  button: {
-    width: "100%",
+  googleContainer: {
+    marginBottom: 24,
+    width: '100%',
   },
-  linkContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: theme.spacing(6), // 24px
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    paddingHorizontal: 16,
   },
   error: {
-    marginBottom: theme.spacing(3),
-    textAlign: "center",
+    marginBottom: 16,
+    textAlign: 'center',
   },
-}));
+  linkContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+  },
+});

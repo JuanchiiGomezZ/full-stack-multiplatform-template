@@ -1,28 +1,65 @@
-import { api } from '@/shared/lib/api';
-import type { AuthResponse, LoginDto, RegisterDto, User } from '../types/auth.types';
+import { api } from "@/shared/lib/api";
+import { googleSignIn } from "@/shared/lib/google-signin";
+import type { AuthResponse, TokensResponse, User } from "../types/auth.types";
 
 export const authApi = {
-  login: async (data: LoginDto): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', data);
+  loginWithGoogle: async (): Promise<AuthResponse> => {
+    // Force account picker
+    await googleSignIn.signOut();
+    await googleSignIn.signIn();
+
+    // Get tokens
+    const { idToken, accessToken } = await googleSignIn.getTokens();
+
+    if (!idToken) {
+      throw new Error("Login cancelled");
+    }
+
+    // Send to backend (send both for flexibility)
+    const response = await api.post<AuthResponse>("/auth/google", {
+      idToken,
+      accessToken,
+    });
     return response.data;
   },
 
-  register: async (data: RegisterDto): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', data);
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>("/auth/login", { email, password });
     return response.data;
   },
 
-  refresh: async (refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> => {
-    const response = await api.post('/auth/refresh', { refreshToken });
+  register: async (
+    email: string,
+    password: string,
+    firstName?: string,
+    lastName?: string
+  ): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>("/auth/register", {
+      email,
+      password,
+      firstName,
+      lastName,
+    });
+    return response.data;
+  },
+
+  refresh: async (refreshToken: string): Promise<TokensResponse> => {
+    const response = await api.post<TokensResponse>("/auth/refresh", { refreshToken });
     return response.data;
   },
 
   logout: async (refreshToken: string): Promise<void> => {
-    await api.post('/auth/logout', { refreshToken });
+    await api.post("/auth/logout", { refreshToken });
+    await googleSignIn.signOut();
   },
 
   getMe: async (): Promise<User> => {
-    const response = await api.get('/users/me');
+    const response = await api.get<User>("/auth/me");
+    return response.data;
+  },
+
+  completeOnboarding: async (): Promise<User> => {
+    const response = await api.patch<User>("/auth/onboarding");
     return response.data;
   },
 };

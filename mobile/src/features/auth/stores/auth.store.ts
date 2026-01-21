@@ -1,93 +1,111 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
-import type { User } from '../types/auth.types';
-import { STORAGE_KEYS } from '@/constants';
-
-// Custom storage for SecureStore
-const createSecureStorage = () => ({
-  getItem: async (name: string): Promise<string | null> => {
-    const value = await SecureStore.getItemAsync(name);
-    return value ?? null;
-  },
-  setItem: async (name: string, value: string): Promise<void> => {
-    await SecureStore.setItemAsync(name, value);
-  },
-  removeItem: async (name: string): Promise<void> => {
-    await SecureStore.deleteItemAsync(name);
-  },
-});
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { zustandStorage } from "@/shared/utils/storage";
+import { googleSignIn } from "@/shared/lib/google-signin";
+import type { User } from "../types/auth.types";
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  _hasHydrated: boolean;
 
   // Actions
   setUser: (user: User | null) => void;
-  setToken: (token: string | null) => void;
-  setLoading: (loading: boolean) => void;
-  login: (user: User, token: string) => void;
-  logout: () => void;
+  setIsLoading: (loading: boolean) => void;
+  login: (user: User, accessToken: string, refreshToken: string) => void;
+  logout: () => Promise<void>;
+  updateUser: (user: Partial<User>) => void;
+  setAccessToken: (token: string) => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
-      token: null,
+      accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
-      isLoading: true,
+      isLoading: false,
+      _hasHydrated: false,
 
-      setUser: (user) => {
-        set({ user });
+      setUser: (user) => set({ user }),
+      setIsLoading: (loading) => set({ isLoading: loading }),
+      setHasHydrated: (state) => {
+        console.log("[AuthStore] Hydration state changed:", state);
+        set({ _hasHydrated: state });
       },
 
-      setToken: (token) => {
-        set({ token });
-      },
-
-      setLoading: (isLoading) => {
-        set({ isLoading });
-      },
-
-      login: (user, token) => {
+      login: (user, accessToken, refreshToken) => {
+        console.log("[AuthStore] login called with user:", {
+          id: user.id,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+        });
         set({
           user,
-          token,
+          accessToken,
+          refreshToken,
           isAuthenticated: true,
         });
       },
 
-      logout: () => {
+      logout: async () => {
+        await googleSignIn.signOut();
         set({
           user: null,
-          token: null,
+          accessToken: null,
+          refreshToken: null,
           isAuthenticated: false,
         });
       },
+
+      updateUser: (userData) => {
+        const currentUser = get().user;
+        if (currentUser) {
+          set({ user: { ...currentUser, ...userData } });
+        }
+      },
+
+      setAccessToken: (token) => {
+        set({ accessToken: token });
+      },
     }),
     {
-      name: 'auth-storage',
-      storage: createJSONStorage(() => createSecureStorage()),
+      name: "auth-storage",
+      storage: createJSONStorage(() => zustandStorage),
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => {
+        console.log("[AuthStore] Starting rehydration...");
+        return (state, error) => {
+          if (error) {
+            console.error("[AuthStore] Rehydration error:", error);
+          } else {
+            console.log("[AuthStore] Rehydration complete, state:", {
+              isAuthenticated: state?.isAuthenticated,
+              hasUser: !!state?.user,
+              user: state?.user,
+              hasCompletedOnboarding: state?.user?.hasCompletedOnboarding,
+            });
+          }
+          state?.setHasHydrated(true);
+        };
+      },
     }
   )
 );
 
-// Selectors para mejor rendimiento
+// Selectors
 export const selectUser = (state: AuthState) => state.user;
 export const selectIsAuthenticated = (state: AuthState) => state.isAuthenticated;
+export const selectAccessToken = (state: AuthState) => state.accessToken;
+export const selectRefreshToken = (state: AuthState) => state.refreshToken;
 export const selectIsLoading = (state: AuthState) => state.isLoading;
-export const selectAuthActions = (state: AuthState) => ({
-  login: state.login,
-  logout: state.logout,
-  setUser: state.setUser,
-  setToken: state.setToken,
-  setLoading: state.setLoading,
-});
+export const selectHasHydrated = (state: AuthState) => state._hasHydrated;

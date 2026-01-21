@@ -1,6 +1,10 @@
-import { storage } from "@shared/utils/storage";
-import { STORAGE_KEYS } from "@/constants";
+import { MMKV } from 'react-native-mmkv';
 import { getLocales } from "expo-localization";
+
+// Create MMKV instance for i18n
+const i18nStorage = new MMKV({ id: 'i18n-storage' });
+
+const LANGUAGE_KEY = 'language';
 
 /**
  * MMKV Language Detector Plugin para i18next
@@ -18,7 +22,7 @@ export const mmkvLanguageDetector = {
   },
   detect: (): string => {
     // 1. Intentar obtener idioma guardado en MMKV
-    const savedLanguage = storage.getString(STORAGE_KEYS.LANGUAGE);
+    const savedLanguage = i18nStorage.getString(LANGUAGE_KEY);
     if (savedLanguage) {
       console.log("[i18n] Using saved language:", savedLanguage);
       return savedLanguage;
@@ -41,6 +45,6 @@ export const mmkvLanguageDetector = {
   },
   cacheUserLanguage: (language: string): void => {
     console.log("[i18n] Saving language preference:", language);
-    storage.set(STORAGE_KEYS.LANGUAGE, language);
+    i18nStorage.set(LANGUAGE_KEY, language);
   },
 };

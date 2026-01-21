@@ -1,2 +1,1 @@
-// Auth components - currently empty
-// Route protection is now handled at the layout level
+export { GoogleSignInButton } from './GoogleSignInButton';
