@@ -1,18 +1,20 @@
 import { useEffect } from "react";
-import { router, Tabs } from "expo-router";
+import { Stack, router } from "expo-router";
 import {
   useAuthStore,
   selectIsAuthenticated,
   selectHasHydrated,
 } from "@/features/auth/stores/auth.store";
 
-export default function TabsLayout() {
+export default function OnboardingLayout() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const hasHydrated = useAuthStore(selectHasHydrated);
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (!hasHydrated) return;
+    if (!hasHydrated) {
+      return;
+    }
 
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
@@ -20,35 +22,30 @@ export default function TabsLayout() {
       return;
     }
 
-    // Redirect to onboarding if not completed
-    if (user && !user.hasCompletedOnboarding) {
-      router.replace("/(onboarding)");
+    // Redirect to tabs if already completed onboarding
+    if (user?.hasCompletedOnboarding) {
+      router.replace("/(tabs)/home");
     }
   }, [hasHydrated, isAuthenticated, user?.hasCompletedOnboarding]);
 
-  // Don't render protected screens if not hydrated or not authenticated
-  if (!hasHydrated || !isAuthenticated) {
+  // Don't render if not hydrated yet
+  if (!hasHydrated) {
     return null;
   }
 
-  // Don't render tabs if onboarding not completed
-  if (user && !user.hasCompletedOnboarding) {
+  // Only render for authenticated users who haven't completed onboarding
+  if (!isAuthenticated || user?.hasCompletedOnboarding) {
     return null;
   }
 
   return (
-    <Tabs
+    <Stack
       screenOptions={{
         headerShown: false,
       }}
+      initialRouteName="index"
     >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          tabBarIcon: () => null,
-        }}
-      />
-    </Tabs>
+      <Stack.Screen name="index" />
+    </Stack>
   );
 }

@@ -19,5 +19,10 @@
     "invalid_email": "Correo electrónico inválido",
     "network_error": "Error de conexión",
     "generic": "Ha ocurrido un error"
+  },
+  "onboarding": {
+    "welcome": "¡Bienvenido!",
+    "description": "¡Nos alegra conocerte, {{name}}! Estamos felices de tenerte aquí.",
+    "get_started": "Comenzar"
   }
 }

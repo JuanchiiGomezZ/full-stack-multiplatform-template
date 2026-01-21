@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../core/database/prisma.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import {
@@ -12,34 +11,24 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(dto.password, 12);
-
     return this.prisma.user.create({
-      data: {
-        ...dto,
-        password: hashedPassword,
-      },
+      data: dto,
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
         role: true,
-        isActive: true,
-        organizationId: true,
         createdAt: true,
       },
     });
   }
 
-  async findAll(pagination: PaginationDto, organizationId?: string) {
+  async findAll(pagination: PaginationDto) {
     const { page, limit, sortBy, sortOrder } = pagination;
     const skip = (page - 1) * limit;
 
-    const where = {
-      deletedAt: null,
-      ...(organizationId && { organizationId }),
-    };
+    const where = { deletedAt: null };
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -53,8 +42,6 @@ export class UsersService {
           firstName: true,
           lastName: true,
           role: true,
-          isActive: true,
-          organizationId: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -74,16 +61,6 @@ export class UsersService {
         firstName: true,
         lastName: true,
         role: true,
-        isActive: true,
-        emailVerified: true,
-        organizationId: true,
-        organization: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
         createdAt: true,
         updatedAt: true,
       },
@@ -102,38 +79,30 @@ export class UsersService {
     });
   }
 
-  async update(id: string, dto: UpdateUserDto, updatedBy?: string) {
+  async update(id: string, dto: UpdateUserDto) {
     await this.findOne(id);
 
     return this.prisma.user.update({
       where: { id },
-      data: {
-        ...dto,
-        updatedBy,
-      },
+      data: dto,
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
         role: true,
-        isActive: true,
-        organizationId: true,
         updatedAt: true,
       },
     });
   }
 
-  async remove(id: string, deletedBy?: string) {
+  async remove(id: string) {
     await this.findOne(id);
 
     // Soft delete
     await this.prisma.user.update({
       where: { id },
-      data: {
-        deletedAt: new Date(),
-        updatedBy: deletedBy,
-      },
+      data: { deletedAt: new Date() },
     });
   }
 }

@@ -1,25 +1,23 @@
 /**
- * Storage utilities using MMKV for general data and SecureStore for sensitive data
+ * Storage utilities using MMKV for all data (tokens, user data, preferences)
  * All operations are synchronous for better performance
  */
 
 import { MMKV } from "react-native-mmkv";
-import * as SecureStore from "expo-secure-store";
-import { STORAGE_KEYS } from "@/constants";
-import { ThemeMode } from "../hooks";
+import type { ThemeMode } from "../hooks";
 
 // ==================== MMKV INSTANCE ====================
 
 const mmkv = new MMKV();
 
-// ==================== MMKV OPERATIONS (General Storage) ====================
+// ==================== MMKV OPERATIONS ====================
 
-const generalStorage = {
+const storage = {
   getString: (key: string): string | undefined => {
     try {
       return mmkv.getString(key);
     } catch (error) {
-      console.error(`[MMKV] getString error for key "${key}":`, error);
+      console.error(`[Storage] getString error for key "${key}":`, error);
       return undefined;
     }
   },
@@ -28,7 +26,7 @@ const generalStorage = {
     try {
       mmkv.set(key, value);
     } catch (error) {
-      console.error(`[MMKV] set error for key "${key}":`, error);
+      console.error(`[Storage] set error for key "${key}":`, error);
     }
   },
 
@@ -36,7 +34,7 @@ const generalStorage = {
     try {
       return mmkv.getNumber(key);
     } catch (error) {
-      console.error(`[MMKV] getNumber error for key "${key}":`, error);
+      console.error(`[Storage] getNumber error for key "${key}":`, error);
       return undefined;
     }
   },
@@ -45,7 +43,7 @@ const generalStorage = {
     try {
       mmkv.set(key, value);
     } catch (error) {
-      console.error(`[MMKV] setNumber error for key "${key}":`, error);
+      console.error(`[Storage] setNumber error for key "${key}":`, error);
     }
   },
 
@@ -53,7 +51,7 @@ const generalStorage = {
     try {
       return mmkv.getBoolean(key);
     } catch (error) {
-      console.error(`[MMKV] getBoolean error for key "${key}":`, error);
+      console.error(`[Storage] getBoolean error for key "${key}":`, error);
       return undefined;
     }
   },
@@ -62,7 +60,7 @@ const generalStorage = {
     try {
       mmkv.set(key, value);
     } catch (error) {
-      console.error(`[MMKV] setBoolean error for key "${key}":`, error);
+      console.error(`[Storage] setBoolean error for key "${key}":`, error);
     }
   },
 
@@ -70,7 +68,7 @@ const generalStorage = {
     try {
       mmkv.delete(key);
     } catch (error) {
-      console.error(`[MMKV] remove error for key "${key}":`, error);
+      console.error(`[Storage] remove error for key "${key}":`, error);
     }
   },
 
@@ -78,7 +76,7 @@ const generalStorage = {
     try {
       mmkv.clearAll();
     } catch (error) {
-      console.error("[MMKV] clearAll error:", error);
+      console.error("[Storage] clearAll error:", error);
     }
   },
 
@@ -86,65 +84,15 @@ const generalStorage = {
     try {
       return mmkv.getAllKeys();
     } catch (error) {
-      console.error("[MMKV] getAllKeys error:", error);
+      console.error("[Storage] getAllKeys error:", error);
       return [];
     }
   },
-};
-
-// ==================== SECURE STORE OPERATIONS (Sensitive Data) ====================
-
-const secureStorage = {
-  getString: async (key: string): Promise<string | null> => {
-    try {
-      return await SecureStore.getItemAsync(key);
-    } catch (error) {
-      console.error(`[SecureStore] getString error for key "${key}":`, error);
-      return null;
-    }
-  },
-
-  set: async (key: string, value: string): Promise<void> => {
-    try {
-      await SecureStore.setItemAsync(key, value);
-    } catch (error) {
-      console.error(`[SecureStore] set error for key "${key}":`, error);
-    }
-  },
-
-  remove: async (key: string): Promise<void> => {
-    try {
-      await SecureStore.deleteItemAsync(key);
-    } catch (error) {
-      console.error(`[SecureStore] remove error for key "${key}":`, error);
-    }
-  },
-};
-
-// ==================== GENERAL STORAGE (MMKV) ====================
-
-export const storage = {
-  // String operations
-  getString: generalStorage.getString,
-  set: generalStorage.set,
-
-  // Number operations
-  getNumber: generalStorage.getNumber,
-  setNumber: generalStorage.setNumber,
-
-  // Boolean operations
-  getBoolean: generalStorage.getBoolean,
-  setBoolean: generalStorage.setBoolean,
-
-  // Utility operations
-  remove: generalStorage.remove,
-  clearAll: generalStorage.clearAll,
-  getAllKeys: generalStorage.getAllKeys,
 
   // Object operations (JSON)
   getObject: <T>(key: string): T | null => {
     try {
-      const value = generalStorage.getString(key);
+      const value = mmkv.getString(key);
       if (!value) return null;
       return JSON.parse(value) as T;
     } catch (error) {
@@ -155,91 +103,53 @@ export const storage = {
 
   setObject: <T>(key: string, value: T): void => {
     try {
-      generalStorage.set(key, JSON.stringify(value));
+      mmkv.set(key, JSON.stringify(value));
     } catch (error) {
       console.error(`[Storage] setObject error for key "${key}":`, error);
     }
   },
 };
 
-// ==================== SECURE STORAGE (Tokens) ====================
+// ==================== AUTH STORAGE ====================
 
-export const secureStorageApi = {
-  // Access Token
-  getAccessToken: async (): Promise<string | null> => {
-    return secureStorage.getString(STORAGE_KEYS.ACCESS_TOKEN);
+export const authStorage = {
+  getAuthData: (): { user: unknown; accessToken: string; refreshToken: string } | null => {
+    return storage.getObject("auth-storage");
   },
 
-  setAccessToken: async (token: string): Promise<void> => {
-    await secureStorage.set(STORAGE_KEYS.ACCESS_TOKEN, token);
+  setAuthData: (data: { user: unknown; accessToken: string; refreshToken: string }): void => {
+    storage.setObject("auth-storage", data);
   },
 
-  removeAccessToken: async (): Promise<void> => {
-    await secureStorage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-  },
-
-  // Refresh Token
-  getRefreshToken: async (): Promise<string | null> => {
-    return secureStorage.getString(STORAGE_KEYS.REFRESH_TOKEN);
-  },
-
-  setRefreshToken: async (token: string): Promise<void> => {
-    await secureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, token);
-  },
-
-  removeRefreshToken: async (): Promise<void> => {
-    await secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN);
-  },
-
-  // User data (encrypted)
-  getUser: async (): Promise<string | null> => {
-    return secureStorage.getString(STORAGE_KEYS.USER);
-  },
-
-  setUser: async (userData: string): Promise<void> => {
-    await secureStorage.set(STORAGE_KEYS.USER, userData);
-  },
-
-  removeUser: async (): Promise<void> => {
-    await secureStorage.remove(STORAGE_KEYS.USER);
-  },
-
-  // Clear all auth data
-  clearAuthData: async (): Promise<void> => {
-    await Promise.all([
-      secureStorage.remove(STORAGE_KEYS.ACCESS_TOKEN),
-      secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN),
-      secureStorage.remove(STORAGE_KEYS.USER),
-    ]);
+  clearAuthData: (): void => {
+    storage.remove("auth-storage");
   },
 };
 
-// ==================== APP PREFERENCES (MMKV) ====================
+// ==================== PREFERENCES ====================
 
 export const preferences = {
   // Theme
   getTheme: (): ThemeMode | null => {
-    const theme = generalStorage.getString(STORAGE_KEYS.THEME);
+    const theme = storage.getString("theme");
     return theme === "light" || theme === "dark" ? theme : null;
   },
 
   setTheme: (theme: ThemeMode): void => {
-    generalStorage.set(STORAGE_KEYS.THEME, theme);
+    storage.set("theme", theme);
   },
 
   removeTheme: (): void => {
-    generalStorage.remove(STORAGE_KEYS.THEME);
+    storage.remove("theme");
   },
 
   // Onboarding
   hasSeenOnboarding: (): boolean => {
-    return (
-      generalStorage.getBoolean(STORAGE_KEYS.ONBOARDING_COMPLETED) ?? false
-    );
+    return storage.getBoolean("onboarding_completed") ?? false;
   },
 
   setOnboardingCompleted: (completed: boolean): void => {
-    generalStorage.setBoolean(STORAGE_KEYS.ONBOARDING_COMPLETED, completed);
+    storage.setBoolean("onboarding_completed", completed);
   },
 };
 
@@ -251,13 +161,30 @@ export const preferences = {
  */
 export const zustandStorage = {
   getItem: (name: string): string | null => {
-    return generalStorage.getString(name) ?? null;
+    const value = storage.getString(name) ?? null;
+    console.log("[zustandStorage] getItem:", name, "value length:", value?.length ?? 0);
+    if (value && name === "auth-storage") {
+      try {
+        const parsed = JSON.parse(value);
+        console.log("[zustandStorage] auth-storage content:", {
+          hasState: !!parsed?.state,
+          hasUser: !!parsed?.state?.user,
+          isAuthenticated: parsed?.state?.isAuthenticated,
+          user: parsed?.state?.user,
+        });
+      } catch (e) {
+        console.error("[zustandStorage] Failed to parse:", e);
+      }
+    }
+    return value;
   },
   setItem: (name: string, value: string): void => {
-    generalStorage.set(name, value);
+    console.log("[zustandStorage] setItem:", name, "value length:", value?.length ?? 0);
+    storage.set(name, value);
   },
   removeItem: (name: string): void => {
-    generalStorage.remove(name);
+    console.log("[zustandStorage] removeItem:", name);
+    storage.remove(name);
   },
 };
 

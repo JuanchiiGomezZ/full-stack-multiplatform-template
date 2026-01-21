@@ -15,7 +15,7 @@ import { MailModule } from './shared/mail';
 import { StorageModule } from './shared/storage';
 
 // Feature modules
-import { AuthModule, JwtAuthGuard, RolesGuard } from './modules/auth';
+import { AuthModule, JwtAuthGuard } from './modules/auth';
 import { UsersModule } from './modules/users';
 
 @Module({
@@ -54,11 +54,6 @@ import { UsersModule } from './modules/users';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    },
-    // Global roles authorization
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
     },
   ],
 })

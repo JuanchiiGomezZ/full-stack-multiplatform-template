@@ -1,9 +1,9 @@
-import "@shared/i18n"; // Inicializar i18next
+import '@/shared/i18n';
 import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/stores/auth.store';
-import * as SecureStore from 'expo-secure-store';
-import { STORAGE_KEYS } from '@/constants';
+import { zustandStorage } from '@/shared/utils/storage';
+import { configureGoogleSignIn } from '@/shared/lib/google-signin';
 import type { User } from '@/features/auth/types/auth.types';
 import { UnistylesRuntime } from 'react-native-unistyles';
 import { preferences } from '@/shared/utils';
@@ -24,7 +24,6 @@ function ThemeInitializer({ children }: { children: React.ReactNode }) {
     const savedTheme = preferences.getTheme();
 
     if (savedTheme && savedTheme !== 'system') {
-      // Desactivar adaptive themes y aplicar tema manual
       UnistylesRuntime.setAdaptiveThemes(false);
       UnistylesRuntime.setTheme(savedTheme);
     }
@@ -33,36 +32,40 @@ function ThemeInitializer({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Hook simple para inicializar auth desde storage
+// Hook para inicializar auth desde MMKV storage
 function useInitializeAuth() {
-  const { setUser, setLoading } = useAuthStore();
+  const { setUser } = useAuthStore();
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       try {
-        const userData = await SecureStore.getItemAsync(STORAGE_KEYS.USER);
-        const accessToken = await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+        const rawData = zustandStorage.getItem('auth-storage');
+        if (!rawData) return;
 
-        if (userData && accessToken) {
-          const storedUser = JSON.parse(userData) as User;
-          setUser(storedUser);
+        const parsed = JSON.parse(rawData) as { state: { user: User; accessToken: string; refreshToken: string } };
+        if (parsed.state?.user && parsed.state?.accessToken) {
+          setUser(parsed.state.user);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.USER);
-      } finally {
-        setLoading(false);
+        zustandStorage.removeItem('auth-storage');
       }
     };
 
     initializeAuth();
-  }, [setUser, setLoading]);
+  }, [setUser]);
+}
+
+// Hook para inicializar Google Sign-In
+function useInitializeGoogleSignIn() {
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
 }
 
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   useInitializeAuth();
+  useInitializeGoogleSignIn();
   return <>{children}</>;
 }
 

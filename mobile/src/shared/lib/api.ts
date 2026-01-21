@@ -1,18 +1,18 @@
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { API_URL, STORAGE_KEYS } from '@/constants';
+import axios from "axios";
+import { API_URL } from "@/constants";
+import { useAuthStore } from "@/features/auth/stores/auth.store";
 
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request interceptor - add auth token
 api.interceptors.request.use(
-  async (config) => {
-    const token = await SecureStore.getItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
+  (config) => {
+    const token = useAuthStore.getState().accessToken;
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -25,9 +25,21 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - handle errors
+// Response interceptor - unwrap response data and handle 401 errors with token refresh
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Backend wraps responses in { data, success, timestamp }
+    // Unwrap to return just the data
+    if (
+      response.data &&
+      typeof response.data === "object" &&
+      "data" in response.data &&
+      "success" in response.data
+    ) {
+      response.data = response.data.data;
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
@@ -36,29 +48,29 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = await SecureStore.getItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
+        const refreshToken = useAuthStore.getState().refreshToken;
 
-        if (refreshToken) {
-          // Try to refresh tokens
-          const response = await axios.post(`${API_URL}/auth/refresh`, {
-            refreshToken,
-          });
-
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
-
-          // Store new tokens
-          await SecureStore.setItemAsync(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-          await SecureStore.setItemAsync(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
-
-          // Retry original request
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return api(originalRequest);
+        if (!refreshToken) {
+          throw new Error("No refresh token");
         }
+
+        // Try to refresh tokens
+        const response = await axios.post(`${API_URL}/auth/refresh`, {
+          refreshToken,
+        });
+
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+        // Update store with new tokens
+        useAuthStore.getState().setAccessToken(accessToken);
+        useAuthStore.getState().login(useAuthStore.getState().user!, accessToken, newRefreshToken);
+
+        // Retry original request
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - clear storage and redirect to login
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
-        await SecureStore.deleteItemAsync(STORAGE_KEYS.USER);
+        // Refresh failed - logout
+        await useAuthStore.getState().logout();
       }
     }
 

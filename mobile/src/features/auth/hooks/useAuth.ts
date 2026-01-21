@@ -1,8 +1,6 @@
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import * as SecureStore from "expo-secure-store";
-import { STORAGE_KEYS } from "@/constants";
 import { authApi } from "../services/auth.service";
 import { useAuthStore, selectIsAuthenticated } from "../stores/auth.store";
 import type { User } from "../types/auth.types";
@@ -19,36 +17,70 @@ const getErrorMessage = (error: unknown): string => {
   return err.response?.data?.message || "An error occurred";
 };
 
-// Clear all auth storage
-const clearAuthStorage = async (): Promise<void> => {
-  await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
-  await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
-  await SecureStore.deleteItemAsync(STORAGE_KEYS.USER);
+// Navigate to onboarding
+const navigateToOnboarding = (): void => {
+  console.log("[useAuth] navigateToOnboarding called");
+  // Small delay to ensure state has propagated
+  setTimeout(() => {
+    router.replace("/(onboarding)");
+  }, 50);
+};
+
+// Navigate to home
+const navigateToHome = (): void => {
+  console.log("[useAuth] navigateToHome called");
+  setTimeout(() => {
+    router.replace("/(tabs)/home");
+  }, 50);
 };
 
 // Navigate to login
 const navigateToLogin = (): void => {
-  router.replace("/(auth)/login" as const);
-};
-
-// Navigate to dashboard
-const navigateToDashboard = (): void => {
-  //TODO: Navigate to dashboard
+  setTimeout(() => {
+    router.replace("/(auth)/login");
+  }, 50);
 };
 
 // ============ HOOKS ============
+
+export function useLoginWithGoogle() {
+  const queryClient = useQueryClient();
+  const login = useAuthStore((state) => state.login);
+
+  return useMutation({
+    mutationFn: authApi.loginWithGoogle,
+    onSuccess: (data) => {
+      login(data.user, data.accessToken, data.refreshToken);
+      queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+
+      if (data.user.hasCompletedOnboarding) {
+        navigateToHome();
+      } else {
+        navigateToOnboarding();
+      }
+    },
+    onError: (error) => {
+      throw new Error(getErrorMessage(error));
+    },
+  });
+}
 
 export function useLogin() {
   const queryClient = useQueryClient();
   const login = useAuthStore((state) => state.login);
 
   return useMutation({
-    mutationFn: authApi.login,
-    onSuccess: async (data) => {
-      login(data.user, data.accessToken);
-      await SecureStore.setItemAsync(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
-      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
-      navigateToDashboard();
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      authApi.login(email, password),
+    onSuccess: (data) => {
+      login(data.user, data.accessToken, data.refreshToken);
+      queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+
+      if (data.user.hasCompletedOnboarding) {
+        navigateToHome();
+      } else {
+        navigateToOnboarding();
+      }
     },
     onError: (error) => {
       throw new Error(getErrorMessage(error));
@@ -61,12 +93,26 @@ export function useRegister() {
   const login = useAuthStore((state) => state.login);
 
   return useMutation({
-    mutationFn: authApi.register,
-    onSuccess: async (data) => {
-      login(data.user, data.accessToken);
-      await SecureStore.setItemAsync(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
-      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
-      navigateToDashboard();
+    mutationFn: ({
+      email,
+      password,
+      firstName,
+      lastName,
+    }: {
+      email: string;
+      password: string;
+      firstName?: string;
+      lastName?: string;
+    }) => authApi.register(email, password, firstName, lastName),
+    onSuccess: (data) => {
+      login(data.user, data.accessToken, data.refreshToken);
+      queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+
+      if (data.user.hasCompletedOnboarding) {
+        navigateToHome();
+      } else {
+        navigateToOnboarding();
+      }
     },
     onError: (error) => {
       throw new Error(getErrorMessage(error));
@@ -77,10 +123,10 @@ export function useRegister() {
 export function useLogout() {
   const queryClient = useQueryClient();
   const logout = useAuthStore((state) => state.logout);
+  const refreshToken = useAuthStore((state) => state.refreshToken);
 
   return useMutation({
     mutationFn: async () => {
-      const refreshToken = await SecureStore.getItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
       if (refreshToken) {
         try {
           await authApi.logout(refreshToken);
@@ -89,16 +135,14 @@ export function useLogout() {
         }
       }
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       logout();
-      await clearAuthStorage();
-      await queryClient.clear();
+      queryClient.clear();
       navigateToLogin();
     },
-    onSettled: async () => {
+    onSettled: () => {
       logout();
-      await clearAuthStorage();
-      await queryClient.clear();
+      queryClient.clear();
       navigateToLogin();
     },
   });
@@ -106,6 +150,7 @@ export function useLogout() {
 
 export function useCurrentUser() {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
+  const updateUser = useAuthStore((state) => state.updateUser);
 
   return useQuery<User>({
     queryKey: authQueryKeys.me,
@@ -115,13 +160,30 @@ export function useCurrentUser() {
   });
 }
 
+export function useCompleteOnboarding() {
+  const queryClient = useQueryClient();
+  const updateUser = useAuthStore((state) => state.updateUser);
+
+  return useMutation({
+    mutationFn: authApi.completeOnboarding,
+    onSuccess: (user) => {
+      updateUser({ hasCompletedOnboarding: true });
+      queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      navigateToHome();
+    },
+    onError: (error) => {
+      throw new Error(getErrorMessage(error));
+    },
+  });
+}
+
 // ============ COMPOSABLE HOOKS ============
 
 export function useAuth() {
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
-  const isLoading = useAuthStore((state) => state.isLoading);
 
+  const loginWithGoogleMutation = useLoginWithGoogle();
   const loginMutation = useLogin();
   const registerMutation = useRegister();
   const logoutMutation = useLogout();
@@ -130,20 +192,20 @@ export function useAuth() {
     // State
     user,
     isAuthenticated,
-    isLoading,
 
     // Actions
+    loginWithGoogle: loginWithGoogleMutation.mutateAsync,
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
 
     // Mutation states
-    isLoggingIn: loginMutation.isPending,
+    isLoggingIn: loginWithGoogleMutation.isPending || loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,
 
     // Error states
-    loginError: loginMutation.error,
+    loginError: loginWithGoogleMutation.error || loginMutation.error,
     registerError: registerMutation.error,
     logoutError: logoutMutation.error,
   };
@@ -151,19 +213,24 @@ export function useAuth() {
 
 // ============ PROTECTED ROUTE HOOK ============
 
-export function useProtectedRoute(redirectTo: "/(auth)/login" = "/(auth)/login") {
+export function useProtectedRoute(redirectTo: "/(auth)/login" | "/(onboarding)" = "/(auth)/login") {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const user = useAuthStore((state) => state.user);
 
   const redirect = useCallback(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthenticated) {
       router.replace(redirectTo);
+      return;
     }
-  }, [isLoading, isAuthenticated, redirectTo]);
+
+    // Redirect to onboarding if not completed
+    if (user && !user.hasCompletedOnboarding && redirectTo !== "/(onboarding)") {
+      router.replace("/(onboarding)");
+    }
+  }, [isAuthenticated, user, redirectTo]);
 
   return {
     isAuthenticated,
-    isLoading,
     redirect,
   };
 }
